@@ -1,0 +1,449 @@
+ <!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>СИЛА.СВОБОДА.УСПЕХ</title>
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    :root {
+        --bg: #0a0a0a; --bg2: #111111; --card: #161616; --border: #2a2a2a; --fg: #f0ece4; --muted: #8a8578;
+        --accent: #d4a843; --accent2: #e8c36a; --accent-dim: rgba(212,168,67,0.15);
+        --danger: #c0392b; --success: #27ae60; --info: #2980b9; --nav-height: 70px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family:'Source Sans 3',sans-serif; background:var(--bg); color:var(--fg); height:100vh; overflow:hidden; position:relative; }
+    .bg-atmosphere { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+    .bg-atmosphere .orb { position:absolute; border-radius:50%; filter:blur(120px); opacity:0.06; }
+    .bg-atmosphere .orb:nth-child(1) { width:400px; height:400px; background:var(--accent); top:-100px; left:-100px; }
+    .bg-atmosphere .orb:nth-child(2) { width:300px; height:300px; background:#c0392b; bottom:-50px; right:-50px; }
+
+    .app-header { position:fixed; top:0; left:0; right:0; z-index:100; height:56px; background:rgba(10,10,10,0.9); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 16px; display:flex; align-items:center; justify-content:space-between; }
+    .brand { font-family:'Oswald',sans-serif; font-weight:700; font-size:16px; letter-spacing:2px; color:var(--accent); }
+    .brand span { color:var(--fg); font-weight:300; }
+    .install-btn { background:var(--accent); color:#0a0a0a; border:none; padding:6px 12px; border-radius:6px; font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; gap:4px; }
+
+    .app-content { position:absolute; top:56px; bottom:var(--nav-height); left:0; right:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; z-index:1; }
+    .section { display:none; padding:20px 16px 30px; animation:fadeUp 0.3s ease; }
+    .section.active { display:block; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .app-nav { position:fixed; bottom:0; left:0; right:0; height:var(--nav-height); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); border-top:1px solid var(--border); z-index:100; display:flex; justify-content:space-around; align-items:center; padding-bottom:env(safe-area-inset-bottom); }
+    .nav-tab { display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:10px; font-family:'Oswald',sans-serif; letter-spacing:1px; transition:color 0.2s; padding:8px 10px; }
+    .nav-tab i { font-size:18px; }
+    .nav-tab.active { color:var(--accent); }
+
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; }
+    .card-title { font-family:'Oswald',sans-serif; font-size:18px; font-weight:600; letter-spacing:1px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .card-title i { color:var(--accent); }
+
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .stat-row { display:flex; gap:8px; margin-bottom:16px; }
+    .stat-badge { flex:1; min-width:70px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+    .stat-badge .num { font-family:'Oswald',sans-serif; font-size:22px; font-weight:700; color:var(--accent); }
+    .stat-badge .label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+
+    .hero { text-align:center; padding:20px 0; }
+    .hero-title { font-family:'Oswald',sans-serif; font-size:clamp(28px,7vw,42px); font-weight:700; line-height:1.1; letter-spacing:2px; margin-bottom:10px; }
+    .hero-title .gold { color:var(--accent); }
+    .hero-sub { font-size:15px; color:var(--muted); font-weight:300; line-height:1.5; margin-bottom:16px; }
+    .hero-motto { font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:4px; color:var(--accent); text-transform:uppercase; opacity:0.7; }
+
+    .progress-wrap { margin:10px 0; }
+    .progress-label { display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
+    .progress-bar { height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:3px; transition:width 0.5s; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+    .progress-fill.blue { background:linear-gradient(90deg,#2980b9,#3498db); }
+
+    .input-group { margin-bottom:12px; }
+    .input-group label { display:block; font-size:11px; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px; }
+    .input-group input, .input-group select, .input-group textarea { width:100%; padding:12px; background:var(--bg2); border:1px solid var(--border); border-radius:8px; color:var(--fg); font-size:16px; font-family:inherit; outline:none; }
+    .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color:var(--accent); }
+    .input-row { display:flex; gap:10px; }
+    .input-row .input-group { flex:1; }
+
+    .btn { display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border:none; border-radius:8px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+    .btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#0a0a0a; }
+    .btn-outline { background:transparent; border:1px solid var(--accent); color:var(--accent); }
+    .btn-sm { padding:8px 14px; font-size:11px; }
+
+    .macro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+    .macro-item { text-align:center; padding:12px 4px; background:var(--bg2); border-radius:8px; border:1px solid var(--border); }
+    .macro-item .macro-val { font-family:'Oswald',sans-serif; font-size:18px; font-weight:700; }
+    .macro-item .macro-label { font-size:9px; color:var(--muted); text-transform:uppercase; margin-top:2px; }
+    .macro-item:nth-child(1) .macro-val { color:var(--accent); }
+    .macro-item:nth-child(2) .macro-val { color:#e74c3c; }
+    .macro-item:nth-child(3) .macro-val { color:#3498db; }
+    .macro-item:nth-child(4) .macro-val { color:#2ecc71; }
+
+    .habit-item { display:flex; align-items:center; gap:12px; padding:12px; background:var(--bg2); border:1px solid var(--border); border-radius:10px; margin-bottom:8px; }
+    .habit-icon { width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .habit-info { flex:1; overflow:hidden; }
+    .habit-name { font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; letter-spacing:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .habit-desc { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .habit-days { display:flex; gap:2px; margin-top:6px; }
+    .habit-day { width:22px; height:22px; border-radius:4px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:8px; color:var(--muted); cursor:pointer; }
+    .habit-day.done { background:var(--accent); border-color:var(--accent); color:#0a0a0a; }
+    .habit-streak { font-family:'Oswald',sans-serif; font-size:18px; font-weight:700; color:var(--accent); text-align:center; min-width:40px; }
+    .habit-streak-label { font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+
+    .water-tracker { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+    .water-glass { width:36px; height:46px; border:2px solid var(--border); border-radius:0 0 6px 6px; position:relative; cursor:pointer; overflow:hidden; }
+    .water-glass::after { content:''; position:absolute; bottom:0; left:0; right:0; height:0%; background:linear-gradient(to top,#3498db,#5dade2); transition:height 0.3s ease; border-radius:0 0 4px 4px; }
+    .water-glass.filled::after { height:100%; }
+    .water-glass i { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:12px; color:var(--muted); z-index:1; }
+    .water-glass.filled i { color:white; }
+
+    .meal-card { background:var(--bg2); border:1px solid var(--border); border-radius:8px; margin-bottom:8px; overflow:hidden; }
+    .meal-header { padding:10px 12px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); background:var(--card); }
+    .meal-name { font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:1px; flex:1; }
+    .meal-time { font-size:11px; color:var(--muted); }
+    .meal-body { padding:10px 12px; }
+    .meal-food { display:flex; justify-content:space-between; padding:4px 0; font-size:13px; }
+    .amount { color:var(--muted); font-size:12px; }
+    .cal { color:var(--accent); font-weight:600; font-size:12px; }
+
+    .tip-card { padding:12px; background:var(--accent-dim); border-left:3px solid var(--accent); border-radius:0 6px 6px 0; margin-bottom:8px; font-size:13px; line-height:1.5; }
+    .tip-card strong { color:var(--accent); }
+
+    .checklist-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .check-box { width:28px; height:28px; border:2px solid var(--border); border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .check-box.checked { background:var(--accent); border-color:var(--accent); }
+    .check-box i { font-size:12px; color:#0a0a0a; opacity:0; }
+    .check-box.checked i { opacity:1; }
+    .check-text.done { text-decoration:line-through; color:var(--muted); }
+
+    .game-area { position:relative; width:100%; height:350px; background:linear-gradient(180deg,#0d0d0d,#1a1008,#2a1a0a); border-radius:12px; overflow:hidden; cursor:crosshair; border:1px solid var(--border); touch-action:none; user-select:none; }
+    .game-area canvas { display:block; width:100%; height:100%; }
+    .game-hud { position:absolute; top:8px; left:8px; right:8px; display:flex; justify-content:space-between; pointer-events:none; z-index:10; }
+    .game-hud-item { background:rgba(10,10,10,0.8); padding:6px 10px; border-radius:6px; font-family:'Oswald',sans-serif; font-size:13px; border:1px solid var(--border); }
+    .game-hud-item span { color:var(--accent); font-weight:700; }
+    .game-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:20; text-align:center; padding:20px; }
+    .game-overlay.hidden { display:none; }
+
+    .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:200; align-items:flex-end; justify-content:center; padding:20px; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--card); border:1px solid var(--border); border-radius:16px 16px 0 0; padding:24px; max-width:480px; width:100%; animation:fadeUp 0.3s ease; }
+
+    .toast-container { position:fixed; top:70px; left:16px; right:16px; z-index:300; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .toast { padding:12px 16px; background:var(--card); border:1px solid var(--accent); border-radius:8px; font-size:13px; animation:slideIn 0.3s ease; display:flex; align-items:center; gap:8px; }
+    .toast i { color:var(--accent); }
+    @keyframes slideIn { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    /* СОЦСЕТЬ */
+    .post-card { background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:16px; overflow:hidden; }
+    .post-header { display:flex; align-items:center; gap:10px; padding:12px 16px; }
+    .avatar { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; color:var(--accent); font-family:'Oswald',sans-serif; font-weight:700; font-size:16px; flex-shrink:0; }
+    .post-author { font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:1px; }
+    .post-time { font-size:11px; color:var(--muted); margin-left:auto; }
+    .post-body { padding:0 16px 12px; font-size:14px; line-height:1.5; }
+    .post-body.achievement { border-left:3px solid var(--accent); padding-left:12px; background:var(--accent-dim); margin:0 16px 12px; border-radius:0 6px 6px 0; font-style:italic; color:var(--accent2); }
+    .post-actions { display:flex; border-top:1px solid var(--border); }
+    .post-action { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; background:none; border:none; color:var(--muted); font-size:13px; cursor:pointer; transition:color 0.2s; }
+    .post-action:hover, .post-action.liked { color:var(--danger); }
+    .post-action i { font-size:16px; }
+    .feed-input { display:flex; gap:10px; margin-bottom:20px; }
+    .feed-input input { flex:1; padding:12px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:20px; color:var(--fg); font-size:14px; outline:none; }
+    .feed-input input:focus { border-color:var(--accent); }
+    .feed-input button { width:44px; height:44px; border-radius:50%; background:var(--accent); border:none; color:#0a0a0a; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+</style>
+</head>
+<body>
+
+<div class="bg-atmosphere"><div class="orb"></div><div class="orb"></div></div>
+
+<header class="app-header">
+    <div class="brand">СИЛА<span>.СВОБОДА</span>.УСПЕХ</div>
+    <button class="install-btn" id="installBtn" style="display:none;"><i class="fas fa-download"></i> Установить</button>
+</header>
+
+<div class="app-content">
+    <!-- ГЛАВНАЯ -->
+    <section class="section active" id="sec-home">
+        <div class="hero">
+            <div class="hero-motto">СИЛА.СВОБОДА.УСПЕХ</div>
+            <h1 class="hero-title">Твоя <span class="gold">трансформация</span></h1>
+            <p class="hero-sub">Побеждай привычки, наладь питание и найди единомышленников.</p>
+        </div>
+        <div class="stat-row">
+            <div class="stat-badge"><div class="num" id="statDays">0</div><div class="label">дней</div></div>
+            <div class="stat-badge"><div class="num" id="statMeals">0</div><div class="label">приёмов</div></div>
+            <div class="stat-badge"><div class="num" id="statWater">0</div><div class="label">воды</div></div>
+            <div class="stat-badge"><div class="num" id="statBottles">0</div><div class="label">разбито</div></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-bolt"></i> Мотивация дня</div>
+            <div id="dailyQuote" style="font-size:15px; line-height:1.6; font-style:italic; color:var(--accent2);"></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-check-double"></i> Чек-лист дня</div>
+            <div id="dailyChecklist"></div>
+        </div>
+    </section>
+
+    <!-- ЛЕНТА (СОЦСЕТЬ) -->
+    <section class="section" id="sec-feed">
+        <div class="card-title" style="padding:0 0 10px 0; margin:0;"><i class="fas fa-users"></i> Лента сообщества</div>
+        <div class="feed-input">
+            <input type="text" id="postInput" placeholder="Поделись своей победой...">
+            <button onclick="addPost()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <div id="feedList"></div>
+    </section>
+
+    <!-- ПРИВЫЧКИ -->
+    <section class="section" id="sec-habits">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-shield-alt"></i> Трекер привычек</div>
+            <div id="habitsList"></div>
+            <button class="btn btn-outline btn-sm" onclick="openAddHabit()" style="width:100%; justify-content:center; margin-top:8px;"><i class="fas fa-plus"></i> Добавить</button>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-brain"></i> Как избавиться</div>
+            <div class="tip-card"><strong>1. Осознай триггер.</strong> Сигнал → желание → действие.</div>
+            <div class="tip-card"><strong>2. Замени, не убирай.</strong> Вместо сладкого — фрукт.</div>
+            <div class="tip-card"><strong>3. Правило 21 дня.</strong> Первая неделя самая тяжёлая.</div>
+            <div class="tip-card"><strong>4. Окружение.</strong> Убери соблазны, сообщи близким.</div>
+        </div>
+    </section>
+
+    <!-- ПИТАНИЕ + КБЖУ -->
+    <section class="section" id="sec-meals">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-calculator"></i> Калькулятор КБЖУ</div>
+            <div class="input-row">
+                <div class="input-group"><label>Пол</label><select id="nGender"><option value="male">Мужской</option><option value="female">Женский</option></select></div>
+                <div class="input-group"><label>Возраст</label><input type="number" id="nAge" value="25"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Рост</label><input type="number" id="nHeight" value="175"></div>
+                <div class="input-group"><label>Вес</label><input type="number" id="nWeight" value="70"></div>
+            </div>
+            <div class="input-group"><label>Цель</label><select id="nGoal"><option value="lose">Похудение</option><option value="maintain" selected>Поддержание</option><option value="gain">Набор массы</option></select></div>
+            <button class="btn btn-primary" onclick="calcNutrition()" style="width:100%; justify-content:center;"><i class="fas fa-chart-pie"></i> Рассчитать</button>
+        </div>
+        <div class="card" id="nutritionResult" style="display:none;">
+            <div class="macro-grid" id="macroGrid"></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-tint"></i> Водный баланс</div>
+            <div class="progress-wrap">
+                <div class="progress-label"><span style="color:var(--muted)">Выпито</span><span style="color:var(--accent)" id="waterCount">0 / 8</span></div>
+                <div class="progress-bar"><div class="progress-fill blue" id="waterBar" style="width:0%"></div></div>
+            </div>
+            <div class="water-tracker" id="waterTracker"></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-clock"></i> Рацион на день</div>
+            <div id="mealPlan"></div>
+        </div>
+    </section>
+
+    <!-- ИГРА -->
+    <section class="section" id="sec-game">
+        <div class="card" style="padding:0; overflow:hidden; border:none;">
+            <div class="game-area" id="gameArea">
+                <canvas id="gameCanvas"></canvas>
+                <div class="game-hud">
+                    <div class="game-hud-item"><i class="fas fa-crosshairs"></i> <span id="gameScore">0</span></div>
+                    <div class="game-hud-item"><i class="fas fa-hourglass-half"></i> <span id="gameTime">30</span>с</div>
+                    <div class="game-hud-item"><i class="fas fa-fire"></i> x<span id="gameCombo">1</span></div>
+                </div>
+                <div class="game-overlay" id="gameOverlay">
+                    <h2 style="color:var(--accent)">Разбей бутылки!</h2>
+                    <p style="color:var(--muted); font-size:14px; margin-bottom:16px;">Тапай по бутылкам!</p>
+                    <button class="btn btn-primary" onclick="startGame()"><i class="fas fa-play"></i> Начать</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<nav class="app-nav">
+    <button class="nav-tab active" data-tab="home"><i class="fas fa-home"></i>Главная</button>
+    <button class="nav-tab" data-tab="feed"><i class="fas fa-stream"></i>Лента</button>
+    <button class="nav-tab" data-tab="habits"><i class="fas fa-ban"></i>Привычки</button>
+    <button class="nav-tab" data-tab="meals"><i class="fas fa-utensils"></i>Питание</button>
+    <button class="nav-tab" data-tab="game"><i class="fas fa-gamepad"></i>Игра</button>
+</nav>
+
+<div class="modal-overlay" id="habitModal">
+    <div class="modal">
+        <div class="modal-title">Новая привычка</div>
+        <div class="input-group"><label>Название</label><input type="text" id="newHabitName" placeholder="Например: Сладкое"></div>
+        <div class="input-group"><label>Описание</label><input type="text" id="newHabitDesc" placeholder="Почему хочу отказаться"></div>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+            <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="addHabit()">Добавить</button>
+            <button class="btn btn-outline" style="flex:1; justify-content:center;" onclick="closeModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// --- ДАННЫЕ ---
+const quotes=["Сила — в том, чтобы подниматься каждый раз.","Ты — хозяин своих привычек.","Каждый день без срыва — кирпич в новую жизнь.","Свобода начинается там, где заканчивается зависимость.","Успех — сумма маленьких усилий изо дня в день."];
+const checklistItems=["8 стаканов воды","Порция овощей","Белок в каждом приёме","Без сладкого","30 мин активности","Сон до 23:00","Без алкоголя","Осознанность 5 мин"];
+const meals=[{name:"Завтрак",time:"7:00",icon:"fa-sun",foods:[{n:"Овсянка + яйцо",a:"200г+2шт",c:420}]},{name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Курица + гречка + салат",a:"350г",c:478}]},{name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Рыба + овощи",a:"300г",c:270}]}];
+
+let habits=[
+    {id:1,name:"Алкоголь",desc:"Убиваю продуктивность",icon:"fa-wine-bottle",color:"#c0392b",days:[1,1,1,1,1,0,0]},
+    {id:2,name:"Сладкое на ночь",desc:"Нарушаю сон",icon:"fa-cookie-bite",color:"#e67e22",days:[1,1,0,1,1,1,0]}
+];
+
+let waterCount=0, totalBottles=0, totalMeals=0;
+
+// --- СОЦИАЛЬНАЯ ЛЕНТА ---
+let feed = [
+    {id:1, author:"Алексей", initial:"А", text:"", achievement:"Разбил 25 бутылок в игре! Мой рекорд!", likes:3, time:"2 часа назад", liked:false},
+    {id:2, author:"Мария", initial:"М", text:"Кто-то знает хороший рецепт ужина без углеводов? Готовлю рыбу, но хочется разнообразия.", achievement:"", likes:5, time:"4 часа назад", liked:false},
+    {id:3, author:"Дмитрий", initial:"Д", text:"", achievement:"7 дней без алкоголя! Чувствую себя новым человеком.", likes:12, time:"Вчера", liked:false},
+    {id:4, author:"Елена", initial:"Е", text:"Заменила вечернее сладкое на творог с ягодами. Сон стал крепче!", achievement:"", likes:8, time:"Вчера", liked:false}
+];
+
+function renderFeed() {
+    const list = document.getElementById('feedList');
+    list.innerHTML = '';
+    feed.forEach(p => {
+        const isAch = p.achievement && p.achievement.length > 0;
+        const content = isAch ? `<div class="post-body achievement"><i class="fas fa-trophy"></i> ${p.achievement}</div>` : `<div class="post-body">${p.text}</div>`;
+        list.innerHTML += `
+            <div class="post-card">
+                <div class="post-header">
+                    <div class="avatar">${p.initial}</div>
+                    <div class="post-author">${p.author}</div>
+                    <div class="post-time">${p.time}</div>
+                </div>
+                ${content}
+                <div class="post-actions">
+                    <button class="post-action ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">
+                        <i class="fas fa-fire"></i> ${p.likes}
+                    </button>
+                    <button class="post-action" onclick="showToast('Комментарии скоро появятся!')">
+                        <i class="fas fa-comment"></i>
+                    </button>
+                    <button class="post-action" onclick="showToast('Поделился в ленте!')">
+                        <i class="fas fa-share"></i>
+                    </button>
+                </div>
+            </div>`;
+    });
+}
+
+function addPost(text) {
+    const input = document.getElementById('postInput');
+    const t = text || input.value.trim();
+    if(!t) return;
+
+    feed.unshift({id: Date.now(), author:"Вы", initial:"Я", text: t, achievement:"", likes:0, time:"Только что", liked:false});
+    input.value = '';
+    renderFeed();
+    showToast('Опубликовано!');
+
+    // Симуляция реакции сообщества
+    setTimeout(() => {
+        feed[0].likes = Math.floor(Math.random()*5)+1;
+        renderFeed();
+    }, 2000);
+}
+
+function toggleLike(id) {
+    const p = feed.find(x=>x.id===id);
+    if(p) { p.liked = !p.liked; p.likes += p.liked ? 1 : -1; renderFeed(); }
+}
+
+// --- НАВИГАЦИЯ ---
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+        document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+        document.getElementById('sec-'+tab.dataset.tab).classList.add('active');
+        if(tab.dataset.tab==='game') resizeCanvas();
+        document.querySelector('.app-content').scrollTop=0;
+    });
+});
+
+// --- ГЛАВНАЯ ---
+function initHome(){
+    document.getElementById('dailyQuote').textContent=`"${quotes[Math.floor(Math.random()*quotes.length)]}"`;
+    const cl=document.getElementById('dailyChecklist'); cl.innerHTML='';
+    const saved=JSON.parse(localStorage.getItem('cl')||'{}');
+    checklistItems.forEach((item,i)=>{
+        const c=saved[i]||false;
+        cl.innerHTML+=`<div class="checklist-item"><div class="check-box ${c?'checked':''}" onclick="toggleCheck(${i},this)"><i class="fas fa-check"></i></div><span class="check-text ${c?'done':''}">${item}</span></div>`;
+    });
+    updateStats();
+}
+function toggleCheck(i,el){const s=JSON.parse(localStorage.getItem('cl')||'{}');s[i]=!s[i];localStorage.setItem('cl',JSON.stringify(s));el.classList.toggle('checked');el.nextElementSibling.classList.toggle('done');updateStats();}
+function updateStats(){const s=JSON.parse(localStorage.getItem('cl')||'{}');const d=Object.values(s).filter(Boolean).length;document.getElementById('statDays').textContent=Math.max(1,d);document.getElementById('statMeals').textContent=totalMeals;document.getElementById('statWater').textContent=waterCount;document.getElementById('statBottles').textContent=totalBottles;}
+
+// --- КБЖУ ---
+function calcNutrition(){
+    const g=document.getElementById('nGender').value,a=+document.getElementById('nAge').value,h=+document.getElementById('nHeight').value,w=+document.getElementById('nWeight').value,goal=document.getElementById('nGoal').value;
+    let bmr=g==='male'?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161;
+    let tdee=bmr*1.55; if(goal==='lose')tdee*=0.85; if(goal==='gain')tdee*=1.15;
+    const cal=Math.round(tdee),p=Math.round(w*1.8),f=Math.round(w*0.9),c=Math.round((cal-p*4-f*9)/4);
+    document.getElementById('nutritionResult').style.display='block';
+    document.getElementById('macroGrid').innerHTML=`<div class="macro-item"><div class="macro-val">${cal}</div><div class="macro-label">Ккал</div></div><div class="macro-item"><div class="macro-val">${p}г</div><div class="macro-label">Белки</div></div><div class="macro-item"><div class="macro-val">${f}г</div><div class="macro-label">Жиры</div></div><div class="macro-item"><div class="macro-val">${c}г</div><div class="macro-label">Углеводы</div></div>`;
+    totalMeals=5; updateStats(); showToast('КБЖУ рассчитан!');
+}
+
+// --- ПРИВЫЧКИ ---
+function renderHabits(){
+    const l=document.getElementById('habitsList');l.innerHTML='';const dl=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+    habits.forEach(h=>{const st=h.days.filter(d=>d).length;let dhtml=dl.map((d,i)=>`<div class="habit-day ${h.days[i]?'done':''}" onclick="toggleHabitDay(${h.id},${i})">${d}</div>`).join('');
+    l.innerHTML+=`<div class="habit-item"><div class="habit-icon" style="background:${h.color}22;color:${h.color}"><i class="fas ${h.icon}"></i></div><div class="habit-info"><div class="habit-name">${h.name}</div><div class="habit-days">${dhtml}</div></div><div><div class="habit-streak">${st}</div><div class="habit-streak-label">дней</div></div></div>`;});
+}
+function toggleHabitDay(id,i){const h=habits.find(x=>x.id===id);if(h){h.days[i]=h.days[i]?0:1;renderHabits();if(h.days.filter(d=>d).length===7)addPost(`Неделя без "${h.name}"! Чувствую СИЛУ!`);}}
+function openAddHabit(){document.getElementById('habitModal').classList.add('show');}
+function closeModal(){document.getElementById('habitModal').classList.remove('show');}
+function addHabit(){const n=document.getElementById('newHabitName').value.trim(),d=document.getElementById('newHabitDesc').value.trim();if(!n){showToast('Введите название!');return;}habits.push({id:Date.now(),name:n,desc:d||'',icon:'fa-ban',color:'#d4a843',days:[0,0,0,0,0,0,0]});closeModal();document.getElementById('newHabitName').value='';renderHabits();showToast('Привычка добавлена!');}
+document.getElementById('habitModal').addEventListener('click',e=>{if(e.target.id==='habitModal')closeModal();});
+
+// --- ПИТАНИЕ ---
+function initMeals(){
+    const t=document.getElementById('waterTracker');t.innerHTML='';
+    for(let i=0;i<8;i++){const g=document.createElement('div');g.className='water-glass';g.innerHTML='<i class="fas fa-tint"></i>';g.addEventListener('click',()=>toggleWater(i,g));t.appendChild(g);}
+    const p=document.getElementById('mealPlan');p.innerHTML='';
+    meals.forEach(m=>{const tc=m.foods.reduce((s,f)=>s+f.c,0);p.innerHTML+=`<div class="meal-card"><div class="meal-header"><i class="fas ${m.icon}"></i><span class="meal-name">${m.name}</span><span class="meal-time">${m.time}</span></div><div class="meal-body">${m.foods.map(f=>`<div class="meal-food"><span>${f.n} <span class="amount">${f.a}</span></span><span class="cal">${f.c} ккал</span></div>`).join('')}<div class="meal-food" style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px;"><span style="font-weight:600">Итого</span><span class="cal">${tc} ккал</span></div></div></div>`;});
+}
+function toggleWater(i,el){el.classList.toggle('filled');waterCount=document.querySelectorAll('.water-glass.filled').length;document.getElementById('waterCount').textContent=`${waterCount} / 8`;document.getElementById('waterBar').style.width=(waterCount/8*100)+'%';updateStats();if(waterCount===8)addPost('Выпил 8 стаканов воды сегодня! Гидратация на уровне!');}
+
+// --- ИГРА ---
+const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
+let gameRunning=false,gameScore=0,gameTime=30,gameCombo=1,comboHits=0,bottles=[],particles=[],flashes=[],floats=[],gameInt,spawnInt;
+const bLabels=['Алкоголь','Сахар','Фастфуд','Курение','Лень','Стресс'];
+function resizeCanvas(){const a=document.getElementById('gameArea');canvas.width=a.clientWidth;canvas.height=a.clientHeight;}
+
+class Bottle{constructor(){this.w=44;this.h=100;this.x=Math.random()*(canvas.width-this.w-20)+10;this.y=-this.h;this.speed=1.5+Math.random()*2;this.label=bLabels[Math.floor(Math.random()*bLabels.length)];this.alive=true;this.wobble=Math.random()*6;this.color=['#c0392b','#e67e22','#8e44ad','#2c3e50'][Math.floor(Math.random()*4)];}update(){this.y+=this.speed;this.wobble+=0.05;if(this.y>canvas.height+20){this.alive=false;comboHits=0;gameCombo=1;}}draw(){const x=this.x+Math.sin(this.wobble)*4,y=this.y;ctx.save();ctx.fillStyle=this.color;ctx.beginPath();ctx.rect(x+14,y,16,20);ctx.fill();ctx.beginPath();ctx.moveTo(x+8,y+50);ctx.quadraticCurveTo(x+8,y+25,x+14,y+20);ctx.lineTo(x+30,y+20);ctx.quadraticCurveTo(x+36,y+25,x+36,y+50);ctx.lineTo(x+36,y+90);ctx.quadraticCurveTo(x+36,y+100,x+28,y+100);ctx.lineTo(x+16,y+100);ctx.quadraticCurveTo(x+8,y+100,x+8,y+90);ctx.closePath();ctx.fill();ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fillRect(x+11,y+58,22,16);ctx.fillStyle=this.color;ctx.font='bold 6px sans-serif';ctx.textAlign='center';ctx.fillText(this.label.substring(0,6),x+22,y+69);ctx.restore();}hit(mx,my){const x=this.x+Math.sin(this.wobble)*4;return mx>=x-4&&mx<=x+this.w+4&&my>=this.y-4&&my<=this.y+this.h+4;}}
+class Particle{constructor(x,y,c){this.x=x;this.y=y;this.vx=(Math.random()-0.5)*10;this.vy=(Math.random()-0.5)*10-2;this.life=1;this.decay=0.02+Math.random()*0.02;this.size=2+Math.random()*6;this.color=c;this.rot=Math.random()*6;}update(){this.x+=this.vx;this.y+=this.vy;this.vy+=0.2;this.life-=this.decay;this.rot+=0.1;}draw(){ctx.save();ctx.globalAlpha=Math.max(0,this.life);ctx.translate(this.x,this.y);ctx.rotate(this.rot);ctx.fillStyle=this.color;ctx.fillRect(-this.size/2,-this.size/2,this.size,this.size);ctx.restore();}}
+class Flash{constructor(x,y){this.x=x;this.y=y;this.r=5;this.life=1;}update(){this.r+=3;this.life-=0.05;}draw(){ctx.save();ctx.globalAlpha=Math.max(0,this.life*0.4);const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,Math.max(1,this.r));g.addColorStop(0,'#d4a843');g.addColorStop(1,'rgba(212,168,67,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(this.x,this.y,Math.max(1,this.r),0,Math.PI*2);ctx.fill();ctx.restore();}}
+class FloatText{constructor(x,y,t,c){this.x=x;this.y=y;this.t=t;this.c=c;this.life=1;this.vy=-1.5;}update(){this.y+=this.vy;this.life-=0.02;}draw(){ctx.save();ctx.globalAlpha=Math.max(0,this.life);ctx.fillStyle=this.c;ctx.font='bold 20px Oswald,sans-serif';ctx.textAlign='center';ctx.fillText(this.t,this.x,this.y);ctx.restore();}}
+
+function startGame(){resizeCanvas();document.getElementById('gameOverlay').classList.add('hidden');gameRunning=true;gameScore=0;gameTime=30;gameCombo=1;comboHits=0;bottles=[];particles=[];flashes=[];floats=[];updateHUD();clearInterval(gameInt);clearInterval(spawnInt);gameInt=setInterval(()=>{gameTime--;document.getElementById('gameTime').textContent=gameTime;if(gameTime<=0)endGame();},1000);spawnInt=setInterval(()=>{if(bottles.length<5)bottles.push(new Bottle());},900);requestAnimationFrame(loop);}
+function loop(){if(!gameRunning)return;ctx.clearRect(0,0,canvas.width,canvas.height);bottles.forEach(b=>{b.update();b.draw();});bottles=bottles.filter(b=>b.alive);particles.forEach(p=>{p.update();p.draw();});particles=particles.filter(p=>p.life>0);flashes.forEach(f=>{f.update();f.draw();});flashes=flashes.filter(f=>f.life>0);floats.forEach(t=>{t.update();t.draw();});floats=floats.filter(t=>t.life>0);requestAnimationFrame(loop);}
+function endGame(){gameRunning=false;clearInterval(gameInt);clearInterval(spawnInt);totalBottles+=gameScore;updateStats();addPost(`Разбил ${gameScore} вредных привычек в игре! Сила растёт!`);const o=document.getElementById('gameOverlay');o.classList.remove('hidden');o.innerHTML=`<h2 style="color:var(--accent)">Результат: ${gameScore}</h2><p style="color:var(--muted);font-size:14px;margin:12px 0">Пост о рекорде добавлен в Ленту!</p><button class="btn btn-primary" onclick="startGame()"><i class="fas fa-redo"></i> Ещё раз</button>`;}
+function updateHUD(){document.getElementById('gameScore').textContent=gameScore;document.getElementById('gameTime').textContent=gameTime;document.getElementById('gameCombo').textContent=gameCombo;}
+
+function handleGameInput(ex,ey){if(!gameRunning)return;const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,mx=(ex-r.left)*sx,my=(ey-r.top)*sy;let hit=false;for(let i=bottles.length-1;i>=0;i--){if(bottles[i].hit(mx,my)){const b=bottles[i],cx=b.x+b.w/2,cy=b.y+b.h/2;for(let j=0;j<15;j++)particles.push(new Particle(cx,cy,j%2?'#ffffff':b.color));flashes.push(new Flash(cx,cy));comboHits++;gameCombo=comboHits>=3?3:comboHits>=2?2:1;gameScore+=10*gameCombo;floats.push(new FloatText(cx,cy-20,`+${10*gameCombo}`,gameCombo>1?'#e8c36a':'#ffffff'));bottles.splice(i,1);hit=true;break;}}if(!hit){comboHits=0;gameCombo=1;}updateHUD();}
+canvas.addEventListener('click',e=>handleGameInput(e.clientX,e.clientY));
+canvas.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];handleGameInput(t.clientX,t.clientY);},{passive:false});
+
+// --- ТОСТ ---
+function showToast(m){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast';t.innerHTML=`<i class="fas fa-check-circle"></i> ${m}`;c.appendChild(t);setTimeout(()=>t.remove(),2500);}
+
+// --- PWA ---
+let deferredPrompt;window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;const btn=document.getElementById('installBtn');btn.style.display='flex';btn.addEventListener('click',async()=>{deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;deferredPrompt=null;btn.style.display='none';});});
+
+// --- ИНИЦИАЛИЗАЦИЯ ---
+initHome();renderHabits();initMeals();renderFeed();resizeCanvas();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
