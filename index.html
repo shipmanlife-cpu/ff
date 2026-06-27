@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 <style>
   :root {
@@ -263,22 +263,146 @@
 <script>
 const quotes=["Сила — в том, чтобы подниматься каждый раз.","Ты — хозяин своих привычек.","Каждый день без срыва — кирпич в новую жизнь.","Свобода начинается там, где заканчивается зависимость.","Успех — сумма маленьких усилий изо дня в день."];
 const checklistItems=["8 стаканов воды","Порция овощей","Белок в каждом приёме","Без сладкого","30 мин активности","Сон до 23:00","Без алкоголя","Осознанность"];
-const mealsData=[{name:"Завтрак",time:"7:00",icon:"fa-sun",foods:[{n:"Овсянка + яйцо",a:"200г+2шт",c:420}]},{name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Курица + гречка + салат",a:"350г",c:478}]},{name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Рыба + овощи",a:"300г",c:270}]}];
-let habits=[{id:1,name:"Алкоголь",icon:"fa-wine-bottle",color:"#ef5350",days:[1,1,1,1,1,0,0]},{id:2,name:"Сладкое",icon:"fa-cookie-bite",color:"#ff7043",days:[1,1,0,1,1,1,0]}];
+
+// ДОБАВЛЕНО КУРЕНИЕ
+let habits=[
+  {id:1,name:"Алкоголь",icon:"fa-wine-bottle",color:"#ef5350",days:[1,1,1,1,1,0,0]},
+  {id:2,name:"Сладкое",icon:"fa-cookie-bite",color:"#ff7043",days:[1,1,0,1,1,1,0]},
+  {id:3,name:"Курение",icon:"fa-smoking",color:"#607d8b",days:[1,1,0,1,0,1,0]}
+];
 let waterCount=0, totalBottles=0;
 
-// ЧАТ
+const dayNames = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+const weeklyMeals = [
+  { // Воскресенье (0)
+    meals: [
+      {name:"Завтрак",time:"8:00",icon:"fa-sun",foods:[{n:"Овсянка на воде с ягодами",a:"250г",c:220},{n:"Грецкие орехи",a:"30г",c:190}]},
+      {name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Чечевица с рисом",a:"300г",c:350},{n:"Салат из свежих овощей",a:"150г",c:80}]},
+      {name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Тофу с брокколи",a:"250г",c:240},{n:"Киноа",a:"100г",c:120}]}
+    ]
+  },
+  { // Понедельник (1)
+    meals: [
+      {name:"Завтрак",time:"8:00",icon:"fa-sun",foods:[{n:"Тост с авокадо и томатами",a:"2 шт",c:320}]},
+      {name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Гречка с грибами",a:"250г",c:280},{n:"Овощной салат с маслом",a:"150г",c:130}]},
+      {name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Нут с тушеными овощами",a:"300г",c:310}]}
+    ]
+  },
+  { // Вторник (2)
+    meals: [
+      {name:"Завтрак",time:"8:00",icon:"fa-sun",foods:[{n:"Смузи (банан, шпинат, семена)",a:"300мл",c:260}]},
+      {name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Цельнозерновая паста с томатом",a:"250г",c:340}]},
+      {name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Овощное рагу с фасолью",a:"300г",c:290}]}
+    ]
+  },
+  { // Среда (3)
+    meals: [
+      {name:"Завтрак",time:"8:00",icon:"fa-sun",foods:[{n:"Пшенка на воде с тыквой",a:"250г",c:210}]},
+      {name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Суп из нута и овощей",a:"300мл",c:220},{n:"Хлебцы",a:"2 шт",c:80}]},
+      {name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Булгур с запеченными кабачками",a:"250г",c:270}]}
+    ]
+  },
+  { // Четверг (4)
+    meals: [
+      {name:"Завтрак",time:"8:00",icon:"fa-sun",foods:[{n:"Рисовая каша на воде с яблоком",a:"250г",c:200}]},
+      {name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Гороховое пюре с овощной котлетой",a:"300г",c:340}]},
+      {name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Соевое мясо (сейтан) с гречкой",a:"250г",c:300}]}
+    ]
+  },
+  { // Пятница (5)
+    meals: [
+      {name:"Завтрак",time:"8:00",icon:"fa-sun",foods:[{n:"Фруктовый салат с орехами",a:"200г",c:240}]},
+      {name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Вегетарианский плов с нутом",a:"300г",c:360}]},
+      {name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Тофу стир-фрай с рисом",a:"250г",c:310}]}
+    ]
+  },
+  { // Суббота (6)
+    meals: [
+      {name:"Завтрак",time:"8:00",icon:"fa-sun",foods:[{n:"Блинчики из банана и овсянки",a:"3 шт",c:290}]},
+      {name:"Обед",time:"13:00",icon:"fa-cloud-sun",foods:[{n:"Том Ям с тофу и грибами",a:"300мл",c:210},{n:"Рис",a:"100г",c:130}]},
+      {name:"Ужин",time:"19:00",icon:"fa-moon",foods:[{n:"Запеченный картофель с грибами",a:"300г",c:270},{n:"Овощной салат",a:"150г",c:80}]}
+    ]
+  }
+];
+
+// --- НОВЫЙ ЧАТ НА MQTT ---
 let myNick = localStorage.getItem('sila_nick') || '';
-const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-const chat = gun.get('sila-chat-v3-opt');
+let clientId = 'sila_app_' + Math.random().toString(36).substr(2, 9);
+const chatTopic = 'sila/svoboda/uspeh/chat/v1';
+
+const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+    clientId: clientId,
+    clean: true,
+    connectTimeout: 4000,
+    reconnectPeriod: 1000
+});
+
+client.on('connect', () => {
+    console.log('Чат подключен к серверу!');
+    client.subscribe(chatTopic, { qos: 0 });
+});
+
+client.on('error', (err) => {
+    console.error('Ошибка чата:', err);
+});
+
+function appendMessage(msg, isMe = false) {
+    const list = document.getElementById('chatMessages');
+    const isSys = msg.author === 'Система';
+    const div = document.createElement('div');
+    div.className = 'msg-bubble ' + (isSys ? 'msg-system' : (isMe ? 'me' : ''));
+    
+    const t = new Date(msg.time);
+    const ts = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
+    
+    div.innerHTML = `
+      ${!isSys ? `<div class="msg-author">${msg.author} <span style="opacity:0.5; font-size:9px; margin-left:4px;">${ts}</span></div>` : ''}
+      <div class="msg-text">${msg.text}</div>
+    `;
+    list.appendChild(div);
+    list.scrollTop = list.scrollHeight;
+}
+
+client.on('message', (topic, message) => {
+    const msg = JSON.parse(message.toString());
+    if (msg.clientId === clientId) return;
+    appendMessage(msg, false);
+});
+
+function sendMessage() {
+    const i = document.getElementById('chatInput');
+    const t = i.value.trim();
+    if(!t || !myNick) return;
+    
+    const msg = {
+        clientId: clientId,
+        author: myNick,
+        text: t,
+        time: Date.now()
+    };
+    
+    client.publish(chatTopic, JSON.stringify(msg), { qos: 0 });
+    appendMessage(msg, true);
+    i.value = '';
+}
+
+function sendSystemMessage(text) {
+    if(!myNick) return;
+    const msg = {
+        clientId: clientId,
+        author: 'Система',
+        text: text,
+        time: Date.now()
+    };
+    client.publish(chatTopic, JSON.stringify(msg), { qos: 0 });
+    appendMessage(msg, false);
+}
+
+document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
 if(!myNick) setTimeout(() => document.getElementById('nickModal').classList.add('show'), 600);
-else initChat();
 
-function saveNick() { const n = document.getElementById('nickInput').value.trim(); if(!n) return showToast('Введи имя!'); myNick = n; localStorage.setItem('sila_nick', myNick); document.getElementById('nickModal').classList.remove('show'); initChat(); showToast('Добро пожаловать, ' + myNick + '!'); }
-function initChat() { const l = document.getElementById('chatMessages'); l.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px;">Подключение...</div>'; chat.map().on(function(msg, id) { if (!msg || !msg.text) return; if (document.getElementById('msg-' + id)) return; const isMe = msg.author === myNick; const isSys = msg.author === 'Система'; const div = document.createElement('div'); div.className = 'msg-bubble ' + (isSys ? 'msg-system' : (isMe ? 'me' : '')); div.id = 'msg-' + id; const t = new Date(msg.time); const ts = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0'); div.innerHTML = `${!isSys ? `<div class="msg-author">${msg.author} <span style="opacity:0.5; font-size:9px; margin-left:4px;">${ts}</span></div>` : ''}<div class="msg-text">${msg.text}</div>`; l.appendChild(div); l.scrollTop = l.scrollHeight; }); }
-function sendMessage() { const i = document.getElementById('chatInput'); const t = i.value.trim(); if(!t || !myNick) return; chat.set({ author: myNick, text: t, time: Date.now() }); i.value = ''; }
-document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+function saveNick() { const n = document.getElementById('nickInput').value.trim(); if(!n) return showToast('Введи имя!'); myNick = n; localStorage.setItem('sila_nick', myNick); document.getElementById('nickModal').classList.remove('show'); showToast('Добро пожаловать, ' + myNick + '!'); }
 
 // НАВИГАЦИЯ
 document.querySelectorAll('.nav-tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.getElementById('sec-'+tab.dataset.tab).classList.add('active'); if(tab.dataset.tab==='game') resizeCanvas(); document.querySelector('.app-content').scrollTop=0; }); });
@@ -293,15 +417,26 @@ function calcNutrition(){ const g=document.getElementById('nGender').value,a=+do
 
 // ПРИВЫЧКИ
 function renderHabits(){ const l=document.getElementById('habitsList');l.innerHTML='';const dl=['Пн','Вт','Ср','Чт','Пт','Сб','Вс']; habits.forEach(h=>{const st=h.days.filter(d=>d).length;let dhtml=dl.map((d,i)=>`<div class="habit-day ${h.days[i]?'done':''}" onclick="toggleHabitDay(${h.id},${i})">${d}</div>`).join(''); l.innerHTML+=`<div class="habit-item"><div class="habit-icon" style="background:${h.color}22;color:${h.color}"><i class="fas ${h.icon}"></i></div><div class="habit-info"><div class="habit-name">${h.name}</div><div class="habit-days">${dhtml}</div></div><div><div class="habit-streak">${st}</div><div class="habit-streak-label">дней</div></div></div>`;}); }
-function toggleHabitDay(id,i){const h=habits.find(x=>x.id===id);if(h){h.days[i]=h.days[i]?0:1;renderHabits();if(h.days.filter(d=>d).length===7 && myNick) chat.set({author:'Система', text:`🏆 ${myNick} прошёл неделю без "${h.name}"!`, time: Date.now()});}}
+function toggleHabitDay(id,i){const h=habits.find(x=>x.id===id);if(h){h.days[i]=h.days[i]?0:1;renderHabits();if(h.days.filter(d=>d).length===7) sendSystemMessage(`🏆 ${myNick} прошёл неделю без "${h.name}"!`);}}
 function openAddHabit(){document.getElementById('habitModal').classList.add('show');}
 function closeModal(){document.getElementById('habitModal').classList.remove('show');}
 function addHabit(){const n=document.getElementById('newHabitName').value.trim();if(!n){showToast('Введите название!');return;}habits.push({id:Date.now(),name:n,icon:'fa-ban',color:'#ffc107',days:[0,0,0,0,0,0,0]});closeModal();document.getElementById('newHabitName').value='';renderHabits();showToast('Привычка добавлена!');}
 document.getElementById('habitModal').addEventListener('click',e=>{if(e.target.id==='habitModal')closeModal();});
 
 // ПИТАНИЕ
-function initMeals(){ const t=document.getElementById('waterTracker');t.innerHTML=''; for(let i=0;i<8;i++){const g=document.createElement('div');g.className='water-glass';g.innerHTML='<i class="fas fa-tint"></i>';g.addEventListener('click',()=>toggleWater(i,g));t.appendChild(g);} const p=document.getElementById('mealPlan');p.innerHTML=''; mealsData.forEach(m=>{const tc=m.foods.reduce((s,f)=>s+f.c,0);p.innerHTML+=`<div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:8px;"><div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><i class="fas ${m.icon}" style="color:var(--accent)"></i><span style="font-family:'Oswald',sans-serif; font-size:15px; flex:1; color:white;">${m.name}</span><span style="font-size:11px; color:var(--muted);">${m.time}</span></div>${m.foods.map(f=>`<div style="display:flex; justify-content:space-between; font-size:13px; padding:3px 0;"><span>${f.n} <span style="color:var(--muted)">${f.a}</span></span><span style="color:var(--accent); font-weight:600;">${f.c} ккал</span></div>`).join('')}</div>`;}); }
-function toggleWater(i,el){el.classList.toggle('filled');waterCount=document.querySelectorAll('.water-glass.filled').length;document.getElementById('waterCount').textContent=`${waterCount} / 8`;document.getElementById('waterBar').style.width=(waterCount/8*100)+'%';updateStats();if(waterCount===8 && myNick) chat.set({author:'Система', text:`💧 ${myNick} выпил 8 стаканов воды!`, time: Date.now()});}
+function initMeals(){ 
+  const t=document.getElementById('waterTracker');t.innerHTML=''; 
+  for(let i=0;i<8;i++){const g=document.createElement('div');g.className='water-glass';g.innerHTML='<i class="fas fa-tint"></i>';g.addEventListener('click',()=>toggleWater(i,g));t.appendChild(g);} 
+  const p=document.getElementById('mealPlan');p.innerHTML='';
+
+  const dayIndex = new Date().getDay(); // 0=Воскресенье, 1=Понедельник...
+  const todayMeals = weeklyMeals[dayIndex].meals;
+
+  p.innerHTML = `<div style="text-align:center; font-family:'Oswald',sans-serif; font-size:18px; color:var(--accent); margin-bottom:12px;">Рацион на ${dayNames[dayIndex]}</div>`;
+
+  todayMeals.forEach(m=>{const tc=m.foods.reduce((s,f)=>s+f.c,0);p.innerHTML+=`<div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:8px;"><div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><i class="fas ${m.icon}" style="color:var(--accent)"></i><span style="font-family:'Oswald',sans-serif; font-size:15px; flex:1; color:white;">${m.name}</span><span style="font-size:11px; color:var(--muted);">${m.time}</span></div>${m.foods.map(f=>`<div style="display:flex; justify-content:space-between; font-size:13px; padding:3px 0;"><span>${f.n} <span style="color:var(--muted)">${f.a}</span></span><span style="color:var(--accent); font-weight:600;">${f.c} ккал</span></div>`).join('')}</div>`;});
+}
+function toggleWater(i,el){el.classList.toggle('filled');waterCount=document.querySelectorAll('.water-glass.filled').length;document.getElementById('waterCount').textContent=`${waterCount} / 8`;document.getElementById('waterBar').style.width=(waterCount/8*100)+'%';updateStats();if(waterCount===8) sendSystemMessage(`💧 ${myNick} выпил 8 стаканов воды! Рекорд!`);}
 
 // ИГРА
 const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
@@ -316,16 +451,12 @@ class FloatText{constructor(x,y,t,c){this.x=x;this.y=y;this.t=t;this.c=c;this.li
 
 function startGame(){resizeCanvas();document.getElementById('gameOverlay').classList.add('hidden');gameRunning=true;gameScore=0;gameTime=30;gameCombo=1;comboHits=0;bottles=[];particles=[];flashes=[];floats=[];updateHUD();clearInterval(gameInt);clearInterval(spawnInt);gameInt=setInterval(()=>{gameTime--;document.getElementById('gameTime').textContent=gameTime;if(gameTime<=0)endGame();},1000);spawnInt=setInterval(()=>{if(bottles.length<5)bottles.push(new Bottle());},800);requestAnimationFrame(loop);}
 function loop(){if(!gameRunning)return;ctx.clearRect(0,0,canvas.width,canvas.height);bottles.forEach(b=>{b.update();b.draw();});bottles=bottles.filter(b=>b.alive);particles.forEach(p=>{p.update();p.draw();});particles=particles.filter(p=>p.life>0);flashes.forEach(f=>{f.update();f.draw();});flashes=flashes.filter(f=>f.life>0);floats.forEach(t=>{t.update();t.draw();});floats=floats.filter(t=>t.life>0);requestAnimationFrame(loop);}
-function endGame(){gameRunning=false;clearInterval(gameInt);clearInterval(spawnInt);totalBottles+=gameScore;updateStats();if(gameScore>10 && myNick) chat.set({author:'Система', text:`🎯 ${myNick} разбил ${gameScore} привычек в игре!`, time: Date.now()}); const o=document.getElementById('gameOverlay');o.classList.remove('hidden');o.innerHTML=`<h2 style="color:var(--accent); font-size:32px; margin-bottom:8px;">${gameScore} очков!</h2><p style="color:var(--muted); font-size:14px; margin-bottom:20px;">Результат в чате</p><button class="btn btn-primary" onclick="startGame()"><i class="fas fa-redo"></i> Ещё раз</button>`;}
+function endGame(){gameRunning=false;clearInterval(gameInt);clearInterval(spawnInt);totalBottles+=gameScore;updateStats();if(gameScore>10) sendSystemMessage(`🎯 ${myNick} разбил ${gameScore} привычек в игре!`); const o=document.getElementById('gameOverlay');o.classList.remove('hidden');o.innerHTML=`<h2 style="color:var(--accent); font-size:32px; margin-bottom:8px;">${gameScore} очков!</h2><p style="color:var(--muted); font-size:14px; margin-bottom:20px;">Результат в чате</p><button class="btn btn-primary" onclick="startGame()"><i class="fas fa-redo"></i> Ещё раз</button>`;}
 function updateHUD(){document.getElementById('gameScore').textContent=gameScore;document.getElementById('gameTime').textContent=gameTime;document.getElementById('gameCombo').textContent=gameCombo;}
 
-// ИСПРАВЛЕННАЯ ОБРАБОТКА НАЖАТИЙ ДЛЯ ИГРЫ
 function handleGameInput(ex,ey){if(!gameRunning)return;const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,mx=(ex-r.left)*sx,my=(ey-r.top)*sy;let hit=false;for(let i=bottles.length-1;i>=0;i--){if(bottles[i].hit(mx,my)){const b=bottles[i],cx=b.x+b.w/2,cy=b.y+b.h/2;for(let j=0;j<12;j++)particles.push(new Particle(cx,cy,j%2?'#ffc107':b.color));flashes.push(new Flash(cx,cy));comboHits++;gameCombo=comboHits>=3?3:comboHits>=2?2:1;gameScore+=10*gameCombo;floats.push(new FloatText(cx,cy-20,`+${10*gameCombo}`,gameCombo>1?'#ffc107':'#ffffff'));bottles.splice(i,1);hit=true;break;}}if(!hit){comboHits=0;gameCombo=1;}updateHUD();}
 
-canvas.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    handleGameInput(e.clientX, e.clientY);
-});
+canvas.addEventListener('pointerdown', e => { e.preventDefault(); handleGameInput(e.clientX, e.clientY); });
 
 function showToast(m){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast';t.innerHTML=`<i class="fas fa-fire" style="color:var(--accent)"></i> ${m}`;c.appendChild(t);setTimeout(()=>t.remove(),2500);}
 
