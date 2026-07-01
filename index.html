@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <style>
   :root {
@@ -269,13 +270,41 @@
       <span><i class="fas fa-comments" style="color:var(--accent)"></i> Лента силы</span>
       <span id="chatStatus" style="font-size:10px; color:var(--muted); font-family:'Oswald',sans-serif; letter-spacing:1px;">⏳ Загрузка...</span>
     </div>
-    <!-- Админ-панель (видна только тебе) -->
+
+    <!-- Экран входа (показывается если не авторизован) -->
+    <div id="chatAuthScreen" style="display:none;">
+      <div class="card" style="text-align:center; padding:30px 20px;">
+        <div style="font-size:48px; margin-bottom:16px;">💬</div>
+        <div style="font-family:'Oswald',sans-serif; font-size:20px; letter-spacing:2px; margin-bottom:8px;">ЛЕНТА СИЛЫ</div>
+        <div style="font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.6;">Общайся с теми, кто тоже борется с вредными привычками. Войди через Google чтобы начать.</div>
+        <button onclick="signInWithGoogle()" style="display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:14px; background:white; color:#333; border:none; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.3);">
+          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Войти через Google
+        </button>
+      </div>
+    </div>
+
+    <!-- Профиль пользователя в чате -->
+    <div id="chatUserBar" style="display:none; margin-bottom:8px;">
+      <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg2); border:1px solid var(--border); border-radius:12px;">
+        <img id="chatUserAvatar" src="" style="width:32px; height:32px; border-radius:50%; border:2px solid var(--accent);">
+        <div style="flex:1;">
+          <div id="chatUserName" style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:white;"></div>
+          <div style="font-size:10px; color:var(--muted);">в сети</div>
+        </div>
+        <button onclick="signOut()" style="background:none; border:1px solid var(--border); color:var(--muted); border-radius:8px; padding:6px 10px; font-size:11px; cursor:pointer;">Выйти</button>
+      </div>
+    </div>
+
+    <!-- Админ-панель -->
     <div class="admin-panel" id="adminPanel" style="display:none;">
       <div class="admin-panel-title">🛡 ADMIN PANEL</div>
       <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">Забаненные пользователи:</div>
       <div id="bannedList"><div style="font-size:12px; color:var(--muted);">Никто не забанен</div></div>
     </div>
-    <div class="chat-container">
+
+    <!-- Чат -->
+    <div id="chatMain" style="display:none;" class="chat-container">
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-area">
         <input type="text" id="chatInput" placeholder="Написать сообщение..." maxlength="300">
@@ -580,10 +609,8 @@ const weeklyMeals = [
 ];
 
 // =============================================
-// ЧАТ НА FIREBASE + СИСТЕМА БАНОВ
+// ЧАТ НА FIREBASE + GOOGLE AUTH + БАНЫ
 // =============================================
-
-// Твой Firebase конфиг
 firebase.initializeApp({
   apiKey: "AIzaSyBPjERk3I3-lajfW0s9M_WI_m5LFXRDQU0",
   authDomain: "sila-svoboda-uspeh.firebaseapp.com",
@@ -593,113 +620,151 @@ firebase.initializeApp({
   appId: "1:41469515012:web:14381d4b1a834ad0baac51"
 });
 const db = firebase.firestore();
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-// ТВОЙ СЕКРЕТНЫЙ ПАРОЛЬ АДМИНА — поменяй на свой!
-const ADMIN_PASSWORD = 'sila2024admin';
-let isAdmin = localStorage.getItem('sila_admin') === 'true';
+// ТВОЙ ADMIN EMAIL — замени на свой Google email!
+const ADMIN_EMAIL = 'shipmanlife@gmail.com';
+let currentUser = null;
+let isAdmin = false;
+let chatUnsubscribe = null;
+
+// Войти через Google
+async function signInWithGoogle() {
+  try {
+    await auth.signInWithPopup(googleProvider);
+  } catch(e) {
+    showToast('Ошибка входа: ' + e.message);
+  }
+}
+
+// Выйти
+async function signOut() {
+  if(chatUnsubscribe) chatUnsubscribe();
+  await auth.signOut();
+}
+
+// Слушаем изменения авторизации
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  if(user) {
+    isAdmin = (user.email === ADMIN_EMAIL);
+    // Показываем чат
+    document.getElementById('chatAuthScreen').style.display = 'none';
+    document.getElementById('chatUserBar').style.display = 'block';
+    document.getElementById('chatMain').style.display = 'flex';
+    // Заполняем профиль
+    document.getElementById('chatUserName').textContent = user.displayName || user.email;
+    document.getElementById('chatUserAvatar').src = user.photoURL || '';
+    // Сохраняем ник для других функций
+    myNick = user.displayName || user.email;
+    myUid = user.uid;
+    localStorage.setItem('sila_nick', myNick);
+    // Запускаем чат
+    initChat();
+    if(isAdmin) {
+      document.getElementById('adminPanel').style.display = 'block';
+      loadBannedList();
+    }
+  } else {
+    // Показываем экран входа
+    document.getElementById('chatAuthScreen').style.display = 'block';
+    document.getElementById('chatUserBar').style.display = 'none';
+    document.getElementById('chatMain').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'none';
+    if(chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+  }
+});
 
 let myNick = localStorage.getItem('sila_nick') || '';
 let myUid = localStorage.getItem('sila_uid') || ('u_' + Math.random().toString(36).substr(2,10));
-localStorage.setItem('sila_uid', myUid);
 
-// Проверка: забанен ли текущий пользователь
+// Проверка бана
 async function isBanned(uid) {
   const doc = await db.collection('banned').doc(uid).get();
   return doc.exists;
 }
 
-// Отобразить сообщение в чате
+// Отобразить сообщение
 function appendMessage(data, docId) {
   const list = document.getElementById('chatMessages');
   if(!list) return;
   const isSys = data.author === 'Система';
-  const isMe = data.uid === myUid;
+  const isMe = currentUser && data.uid === currentUser.uid;
   const div = document.createElement('div');
   div.className = 'msg-bubble ' + (isSys ? 'msg-system' : (isMe ? 'me' : ''));
   div.dataset.id = docId;
-  div.dataset.uid = data.uid || '';
-  div.dataset.author = data.author || '';
   const t = data.time ? new Date(data.time.seconds * 1000) : new Date();
   const ts = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
   if(data.deleted) {
     div.innerHTML = `<div class="msg-text msg-deleted">сообщение удалено</div>`;
   } else {
+    const avatar = data.photoURL ? `<img src="${data.photoURL}" style="width:24px;height:24px;border-radius:50%;margin-right:6px;vertical-align:middle;">` : '';
     const adminBtns = (isAdmin && !isMe && !isSys) ? `
       <div class="msg-admin-btns">
         <button class="msg-admin-btn btn-ban" onclick="banUser('${data.uid}','${data.author}')">🚫 Бан</button>
         <button class="msg-admin-btn btn-del" onclick="deleteMsg('${docId}')">🗑 Удалить</button>
       </div>` : '';
     div.innerHTML = `
-      ${!isSys ? `<div class="msg-author">${data.author}<span style="opacity:0.5;font-size:9px;margin-left:4px;">${ts}</span></div>` : ''}
+      ${!isSys ? `<div class="msg-author">${avatar}${data.author}<span style="opacity:0.5;font-size:9px;margin-left:6px;">${ts}</span></div>` : ''}
       <div class="msg-text">${data.text}</div>
-      ${adminBtns}
-    `;
+      ${adminBtns}`;
   }
-  // Избегаем дублей
   const existing = list.querySelector(`[data-id="${docId}"]`);
-  if(existing) { existing.replaceWith(div); } else { list.appendChild(div); }
+  if(existing) existing.replaceWith(div); else list.appendChild(div);
   list.scrollTop = list.scrollHeight;
 }
 
-// Загрузка сообщений + live обновления
+// Инициализация чата
 function initChat() {
-  const status = document.getElementById('chatStatus');
   const list = document.getElementById('chatMessages');
+  const status = document.getElementById('chatStatus');
   if(!list) return;
   list.innerHTML = '';
-  db.collection('messages')
+  if(chatUnsubscribe) chatUnsubscribe();
+  chatUnsubscribe = db.collection('messages')
     .orderBy('time', 'asc')
     .limitToLast(60)
     .onSnapshot(snapshot => {
       if(status) { status.textContent = '🟢 В сети'; status.style.color = 'var(--success)'; }
       snapshot.docChanges().forEach(change => {
-        if(change.type === 'added') {
+        if(change.type === 'added' || change.type === 'modified')
           appendMessage(change.doc.data(), change.doc.id);
-        }
-        if(change.type === 'modified') {
-          appendMessage(change.doc.data(), change.doc.id);
-        }
       });
     }, err => {
       if(status) { status.textContent = '🔴 Ошибка'; status.style.color = 'var(--danger)'; }
-      console.error('Firebase error:', err);
     });
-  if(isAdmin) {
-    document.getElementById('adminPanel').style.display = 'block';
-    loadBannedList();
-  }
 }
 
 // Отправка сообщения
 async function sendMessage() {
+  if(!currentUser) { showToast('Войди через Google!'); return; }
   const inp = document.getElementById('chatInput');
   const text = inp.value.trim();
-  if(!text) return showToast('Введи сообщение!');
-  if(!myNick) { document.getElementById('nickModal').classList.add('show'); return; }
-  // Проверка бана
-  const banned = await isBanned(myUid);
+  if(!text) return;
+  const banned = await isBanned(currentUser.uid);
   if(banned) { showToast('🚫 Ты заблокирован администратором'); return; }
   inp.value = '';
   await db.collection('messages').add({
-    uid: myUid,
-    author: myNick,
-    text: text,
-    time: firebase.firestore.FieldValue.serverTimestamp(),
-    deleted: false
+    uid: currentUser.uid,
+    author: currentUser.displayName || currentUser.email,
+    photoURL: currentUser.photoURL || '',
+    text, deleted: false,
+    time: firebase.firestore.FieldValue.serverTimestamp()
   });
 }
 
-// Удалить сообщение (только админ)
+// Удалить сообщение
 async function deleteMsg(docId) {
   if(!isAdmin) return;
   await db.collection('messages').doc(docId).update({ deleted: true, text: '' });
   showToast('Сообщение удалено');
 }
 
-// Забанить пользователя (только админ)
+// Забанить
 async function banUser(uid, nick) {
   if(!isAdmin) return;
-  if(!confirm(`Забанить пользователя "${nick}"?`)) return;
+  if(!confirm(`Забанить "${nick}"?`)) return;
   await db.collection('banned').doc(uid).set({ nick, bannedAt: firebase.firestore.FieldValue.serverTimestamp() });
   showToast(`🚫 ${nick} забанен`);
   loadBannedList();
@@ -713,49 +778,28 @@ async function unbanUser(uid, nick) {
   loadBannedList();
 }
 
-// Загрузить список забаненных
+// Список забаненных
 async function loadBannedList() {
   const snap = await db.collection('banned').get();
   const el = document.getElementById('bannedList');
+  if(!el) return;
   if(snap.empty) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);">Никто не забанен</div>'; return; }
   el.innerHTML = '';
   snap.forEach(doc => {
     const d = doc.data();
-    el.innerHTML += `<div class="banned-list-item">
-      <span>🚫 ${d.nick}</span>
-      <button class="unban-btn" onclick="unbanUser('${doc.id}','${d.nick}')">Разбанить</button>
-    </div>`;
+    el.innerHTML += `<div class="banned-list-item"><span>🚫 ${d.nick}</span><button class="unban-btn" onclick="unbanUser('${doc.id}','${d.nick}')">Разбанить</button></div>`;
   });
-}
-
-// Войти как админ (через пароль)
-function tryAdminLogin() {
-  const pw = prompt('Введи пароль администратора:');
-  if(pw === ADMIN_PASSWORD) {
-    isAdmin = true;
-    localStorage.setItem('sila_admin', 'true');
-    document.getElementById('adminPanel').style.display = 'block';
-    loadBannedList();
-    showToast('🛡 Режим администратора включён');
-  } else {
-    showToast('Неверный пароль');
-  }
 }
 
 // Системное сообщение
 async function sendSystemMessage(text) {
-  if(!myNick) return;
   await db.collection('messages').add({
-    uid: 'system',
-    author: 'Система',
-    text: text,
-    time: firebase.firestore.FieldValue.serverTimestamp(),
-    deleted: false
+    uid: 'system', author: 'Система', text,
+    time: firebase.firestore.FieldValue.serverTimestamp(), deleted: false
   });
 }
 
 document.getElementById('chatInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
-if(!myNick) setTimeout(() => document.getElementById('nickModal').classList.add('show'), 2500);
 
 function saveNick() {
   const n = document.getElementById('nickInput').value.trim();
@@ -764,9 +808,7 @@ function saveNick() {
   localStorage.setItem('sila_nick', myNick);
   document.getElementById('nickModal').classList.remove('show');
   showToast('Добро пожаловать, ' + myNick + '! 💪');
-  initChat();
 }
-
 
 // НАВИГАЦИЯ — см. обновлённую версию ниже
 
