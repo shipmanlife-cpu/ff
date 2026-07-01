@@ -885,14 +885,26 @@ let currentUser = null;
 let isAdmin = false;
 let chatUnsubscribe = null;
 
-// Войти через Google
+// Войти через Google — используем redirect вместо popup для WebView
 async function signInWithGoogle() {
   try {
-    await auth.signInWithPopup(googleProvider);
+    // Redirect работает лучше в WebView/мобильных браузерах
+    await auth.signInWithRedirect(googleProvider);
   } catch(e) {
     showToast('Ошибка входа: ' + e.message);
   }
 }
+
+// Проверяем результат redirect при загрузке
+auth.getRedirectResult().then(result => {
+  if(result && result.user) {
+    console.log('Redirect login success:', result.user.email);
+  }
+}).catch(e => {
+  if(e.code !== 'auth/no-auth-event') {
+    console.error('Redirect error:', e);
+  }
+});
 
 // Выйти
 async function signOut() {
