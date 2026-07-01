@@ -1631,7 +1631,16 @@ const splashQuotes = [
   "Свобода начинается с одного решения."
 ];
 document.getElementById('splashQuoteText').textContent = splashQuotes[Math.floor(Math.random()*splashQuotes.length)];
-setTimeout(()=>{ document.getElementById('splashScreen').classList.add('hide'); setTimeout(()=>document.getElementById('splashScreen').remove(), 700); }, 2200);
+
+function hideSplash() {
+  const splash = document.getElementById('splashScreen');
+  if(!splash) return;
+  splash.classList.add('hide');
+  setTimeout(() => { if(splash.parentNode) splash.parentNode.removeChild(splash); }, 700);
+}
+setTimeout(hideSplash, 2000);
+// Запасной вариант — если что-то пошло не так
+window.addEventListener('load', () => setTimeout(hideSplash, 3000));
 
 initHome(); renderHabits(); initMeals(); resizeCanvas();
 
