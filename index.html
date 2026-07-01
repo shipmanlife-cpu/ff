@@ -302,10 +302,15 @@
         <div style="flex:1;"><div style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:white;">Место силы</div><div style="font-size:11px; color:var(--muted);">Особый раздел</div></div>
         <i class="fas fa-chevron-right" style="color:var(--accent); font-size:12px;"></i>
       </a>
-      <a href="https://web.tribute.tg/p/wDZ" target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:12px; padding:10px 0;">
+      <a href="https://web.tribute.tg/p/wDZ" target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
         <div style="width:38px; height:38px; border-radius:10px; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-book" style="color:var(--accent); font-size:16px;"></i></div>
         <div style="flex:1;"><div style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:var(--accent);">Моя книга</div><div style="font-size:11px; color:var(--muted);">Владислав М. — переговорщик, исследователь жизни</div></div>
         <i class="fas fa-chevron-right" style="color:var(--accent); font-size:12px;"></i>
+      </a>
+      <a href="https://t.me/tribute/app?startapp=dzwA" target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:12px; padding:10px 0;">
+        <div style="width:38px; height:38px; border-radius:10px; background:rgba(255,152,0,0.15); border:1px solid #ff9800; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-heart" style="color:#ff9800; font-size:16px;"></i></div>
+        <div style="flex:1;"><div style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:#ff9800;">Поддержать проект</div><div style="font-size:11px; color:var(--muted);">Donate — помоги развитию</div></div>
+        <i class="fas fa-chevron-right" style="color:#ff9800; font-size:12px;"></i>
       </a>
     </div>
 
@@ -637,6 +642,19 @@
         <i class="fas fa-chevron-right" style="color:var(--accent);"></i>
       </div>
     </a>
+
+    <a href="https://t.me/tribute/app?startapp=dzwA" target="_blank" style="text-decoration:none;">
+      <div class="card community-card" style="display:flex; align-items:center; gap:16px; cursor:pointer; border-color:#ff9800;">
+        <div style="width:52px; height:52px; border-radius:12px; background:rgba(255,152,0,0.15); border:2px solid #ff9800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i class="fas fa-heart" style="font-size:22px; color:#ff9800;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:#ff9800;">Поддержать проект</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">Donate — помоги развитию приложения</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color:#ff9800;"></i>
+      </div>
+    </a>
   </section>
 
   <!-- КАЛЬКУЛЯТОР ЭКОНОМИИ -->
@@ -754,6 +772,16 @@
   <button class="nav-tab" data-tab="progress"><i class="fas fa-chart-line"></i>Прогресс</button>
   <button class="nav-tab" data-tab="more" id="moreTab"><i class="fas fa-ellipsis-h"></i>Ещё<span class="notif-dot" id="navDot"></span></button>
 </nav>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div id="confirmText" style="font-size:16px; color:white; margin-bottom:20px; text-align:center; line-height:1.5;"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="confirmAction(false)">Отмена</button>
+      <button class="btn btn-primary" style="flex:1;" id="confirmOkBtn" onclick="confirmAction(true)">Да</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="habitModal">
   <div class="modal">
@@ -1127,19 +1155,54 @@ function relapseHabit(id) {
   showToast('Срыв — не конец. Начни снова! 💪');
 }
 
-function deleteHabit(id) {
-  const data = loadHabitsData();
-  const idx = data.findIndex(x => x.id === id);
-  if(idx === -1) return;
-  if(!confirm('Удалить привычку?')) return;
-  data.splice(idx, 1);
-  saveHabitsData(data);
-  renderHabits();
+// КРАСИВЫЙ CONFIRM
+let confirmCallback = null;
+function showConfirm(text, okText, callback) {
+  document.getElementById('confirmText').textContent = text;
+  document.getElementById('confirmOkBtn').textContent = okText || 'Да';
+  document.getElementById('confirmModal').classList.add('show');
+  confirmCallback = callback;
+}
+function confirmAction(result) {
+  document.getElementById('confirmModal').classList.remove('show');
+  if(confirmCallback) confirmCallback(result);
+  confirmCallback = null;
 }
 
-function toggleHabitDay(id,i){} // оставляем для совместимости
+function deleteHabit(id) {
+  const data = loadHabitsData();
+  const h = data.find(x => x.id === id);
+  if(!h) return;
+  showConfirm(`Удалить привычку "${h.name}"?`, 'Удалить', (ok) => {
+    if(!ok) return;
+    const idx = data.findIndex(x => x.id === id);
+    data.splice(idx, 1);
+    saveHabitsData(data);
+    renderHabits();
+    showToast('Привычка удалена');
+  });
+}
+
+function relapseHabit(id) {
+  const data = loadHabitsData();
+  const h = data.find(x => x.id === id);
+  if(!h) return;
+  showConfirm(`Сбросить счётчик "${h.name}"?\nЭто не конец — начни снова! 💪`, 'Сбросить', (ok) => {
+    if(!ok) return;
+    h.relapses = (h.relapses||0) + 1;
+    h.days = 0;
+    h.lastAction = null;
+    saveHabitsData(data);
+    renderHabits();
+    showToast('Срыв — не конец. Начни снова! 💪');
+  });
+}
 function openAddHabit(){document.getElementById('habitModal').classList.add('show');}
-function closeModal(){document.getElementById('habitModal').classList.remove('show');}
+function closeModal(){
+  document.getElementById('habitModal').classList.remove('show');
+  document.getElementById('confirmModal').classList.remove('show');
+}
+function toggleHabitDay(id,i){}
 function addHabit(){
   const n=document.getElementById('newHabitName').value.trim();
   if(!n){showToast('Введите название!');return;}
