@@ -200,6 +200,26 @@
   .toggle input:checked + .toggle-slider { background:var(--accent); }
   .toggle input:checked + .toggle-slider:before { transform:translateX(20px); background:#000; }
   .notif-dot { position:absolute; top:-3px; right:-3px; width:8px; height:8px; background:var(--danger); border-radius:50%; display:none; }
+  .knowledge-card { cursor:pointer; transition:border-color 0.2s; }
+  .knowledge-card:hover { border-color:var(--accent); }
+  .community-card { transition:all 0.2s; margin-bottom:0; }
+  .community-card:hover { border-color:var(--accent); transform:translateX(4px); }
+
+  /* НОВЫЙ ТРЕКЕР */
+  .habit-counter { background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; }
+  .habit-counter-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .habit-counter-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .habit-counter-name { font-family:'Oswald',sans-serif; font-size:17px; font-weight:600; letter-spacing:1px; color:white; flex:1; }
+  .habit-counter-days { font-family:'Oswald',sans-serif; font-size:36px; font-weight:700; color:var(--accent); text-align:center; line-height:1; }
+  .habit-counter-label { font-size:10px; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px; }
+  .habit-counter-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .btn-add-day { background:var(--accent); color:#000; border:none; border-radius:12px; padding:14px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:1px; cursor:pointer; font-weight:700; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-add-day:active { transform:scale(0.96); }
+  .btn-relapse { background:rgba(239,83,80,0.12); color:var(--danger); border:1px solid rgba(239,83,80,0.3); border-radius:12px; padding:14px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:1px; cursor:pointer; font-weight:600; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-relapse:active { transform:scale(0.96); }
+  .habit-streak-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; margin-top:12px; }
+  .habit-streak-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),#ff9800); transition:width 0.5s ease; }
+  .habit-last-action { font-size:11px; color:var(--muted); text-align:center; margin-top:8px; }
 
   /* СПЛЭШ ЭКРАН */
   #splashScreen { position:fixed; top:0; left:0; width:100%; height:100%; background:#050505; z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; transition:opacity 0.6s ease; }
@@ -263,6 +283,44 @@
       <div class="card-title"><i class="fas fa-check-double"></i> Чек-лист дня</div>
       <div id="dailyChecklist"></div>
     </div>
+
+    <!-- Сообщество на главной -->
+    <div class="card">
+      <div class="card-title"><i class="fas fa-users"></i> Сообщество</div>
+      <a href="https://www.youtube.com/@Mind.strategy" target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="width:38px; height:38px; border-radius:10px; background:#ff0000; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fab fa-youtube" style="color:white; font-size:18px;"></i></div>
+        <div style="flex:1;"><div style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:white;">YouTube канал</div><div style="font-size:11px; color:var(--muted);">@Mind.strategy</div></div>
+        <i class="fas fa-chevron-right" style="color:var(--accent); font-size:12px;"></i>
+      </a>
+      <a href="https://t.me/mind_strategy" target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="width:38px; height:38px; border-radius:10px; background:#229ED9; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fab fa-telegram" style="color:white; font-size:18px;"></i></div>
+        <div style="flex:1;"><div style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:white;">Telegram канал</div><div style="font-size:11px; color:var(--muted);">@mind_strategy</div></div>
+        <i class="fas fa-chevron-right" style="color:var(--accent); font-size:12px;"></i>
+      </a>
+      <a href="https://t.me/mind_strategy/444" target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-mountain" style="color:white; font-size:16px;"></i></div>
+        <div style="flex:1;"><div style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:white;">Место силы</div><div style="font-size:11px; color:var(--muted);">Особый раздел</div></div>
+        <i class="fas fa-chevron-right" style="color:var(--accent); font-size:12px;"></i>
+      </a>
+      <a href="https://web.tribute.tg/p/wDZ" target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:12px; padding:10px 0;">
+        <div style="width:38px; height:38px; border-radius:10px; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-book" style="color:var(--accent); font-size:16px;"></i></div>
+        <div style="flex:1;"><div style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:var(--accent);">Моя книга</div><div style="font-size:11px; color:var(--muted);">Владислав М. — переговорщик, исследователь жизни</div></div>
+        <i class="fas fa-chevron-right" style="color:var(--accent); font-size:12px;"></i>
+      </a>
+    </div>
+
+    <!-- Быстрые разделы -->
+    <div class="card">
+      <div class="card-title"><i class="fas fa-th"></i> Разделы</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <button class="btn btn-outline" onclick="switchToTab('knowledge')" style="padding:14px; flex-direction:column; gap:6px; height:auto;">
+          <i class="fas fa-brain" style="font-size:20px;"></i><span style="font-size:11px;">Знания</span>
+        </button>
+        <button class="btn btn-outline" onclick="switchToTab('savings')" style="padding:14px; flex-direction:column; gap:6px; height:auto;">
+          <i class="fas fa-piggy-bank" style="font-size:20px;"></i><span style="font-size:11px;">Экономия</span>
+        </button>
+      </div>
+    </div>
   </section>
 
   <section class="section" id="sec-feed">
@@ -317,7 +375,7 @@
     <div class="card">
       <div class="card-title"><i class="fas fa-shield-alt"></i> Трекер привычек</div>
       <div id="habitsList"></div>
-      <button class="btn btn-outline" onclick="openAddHabit()" style="width:100%; margin-top:10px; padding:12px;"><i class="fas fa-plus"></i> Добавить</button>
+      <button class="btn btn-outline" onclick="openAddHabit()" style="width:100%; margin-top:10px; padding:12px;"><i class="fas fa-plus"></i> Добавить привычку</button>
     </div>
     <div class="card">
       <div class="card-title"><i class="fas fa-brain"></i> Как избавиться</div>
@@ -367,21 +425,7 @@
           </div>
         </div>
       </div>
-      <div class="bar-row">
-        <div class="bar-label">Без алкоголя</div>
-        <div class="bar-track"><div class="bar-fill" id="barAlco" style="width:0%;background:var(--danger)"></div></div>
-        <div class="bar-val" id="barAlcoVal">0</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">Без сладкого</div>
-        <div class="bar-track"><div class="bar-fill" id="barSweet" style="width:0%;background:#ff7043"></div></div>
-        <div class="bar-val" id="barSweetVal">0</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">Вода 8 стак.</div>
-        <div class="bar-track"><div class="bar-fill" id="barWater" style="width:0%;background:var(--info)"></div></div>
-        <div class="bar-val" id="barWaterVal">0</div>
-      </div>
+      <div id="progressBars"></div>
     </div>
     <div class="card">
       <div class="card-title"><i class="fas fa-calendar-week"></i> Активность за неделю</div>
@@ -431,8 +475,17 @@
         <button class="btn btn-outline" onclick="switchToTab('meals')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
           <i class="fas fa-calculator" style="font-size:22px;"></i><span style="font-size:11px;">Расчёт КБЖУ</span>
         </button>
+        <button class="btn btn-outline" onclick="switchToTab('knowledge')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
+          <i class="fas fa-brain" style="font-size:22px;"></i><span style="font-size:11px;">Знания</span>
+        </button>
+        <button class="btn btn-outline" onclick="switchToTab('community')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
+          <i class="fas fa-users" style="font-size:22px;"></i><span style="font-size:11px;">Сообщество</span>
+        </button>
+        <button class="btn btn-outline" onclick="switchToTab('savings')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
+          <i class="fas fa-piggy-bank" style="font-size:22px;"></i><span style="font-size:11px;">Экономия</span>
+        </button>
         <button class="btn btn-outline" style="padding:16px; flex-direction:column; gap:6px; height:auto; opacity:0.5; cursor:default;">
-          <i class="fas fa-book-open" style="font-size:22px;"></i><span style="font-size:11px;">Рецепты</span><span style="font-size:9px; color:var(--accent); letter-spacing:1px;">СКОРО</span>
+          <i class="fas fa-utensils" style="font-size:22px;"></i><span style="font-size:11px;">Рецепты</span><span style="font-size:9px; color:var(--accent); letter-spacing:1px;">СКОРО</span>
         </button>
         <button class="btn btn-outline" onclick="switchToTab('game')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
           <i class="fas fa-gamepad" style="font-size:22px;"></i><span style="font-size:11px;">Игра</span>
@@ -444,6 +497,181 @@
           <i class="fas fa-bell" style="font-size:22px;"></i><span style="font-size:11px;">Напоминания</span>
         </button>
       </div>
+    </div>
+  </section>
+
+  <!-- ЗНАНИЯ -->
+  <section class="section" id="sec-knowledge">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-brain"></i> База знаний</div>
+      <p style="font-size:13px; color:var(--muted); line-height:1.6;">Научись понимать свои привычки и менять их навсегда.</p>
+    </div>
+
+    <div class="card knowledge-card" onclick="toggleKnowledge('k1')">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:white;">🚬 Как бросить курить</div>
+        <i class="fas fa-chevron-down" style="color:var(--accent); transition:0.3s;" id="icon-k1"></i>
+      </div>
+      <div class="knowledge-body" id="k1" style="display:none; margin-top:12px;">
+        <div class="tip-card"><strong>1. Найди триггер.</strong> Когда хочется курить? После еды, при стрессе, с кофе? Замени ритуал — жвачка, стакан воды, 5 глубоких вдохов.</div>
+        <div class="tip-card"><strong>2. Правило 72 часов.</strong> Никотин выводится из крови за 3 дня. После этого — только психологическая зависимость.</div>
+        <div class="tip-card"><strong>3. Счётчик денег.</strong> Посчитай сколько тратишь в месяц. Визуализируй что можешь купить вместо этого.</div>
+        <div class="tip-card"><strong>4. Спорт — твой союзник.</strong> 20 минут бега снимают тягу к никотину на 2-3 часа. Проверено наукой.</div>
+        <div class="tip-card"><strong>5. Скажи другим.</strong> Публичное обязательство увеличивает шанс успеха на 65%.</div>
+      </div>
+    </div>
+
+    <div class="card knowledge-card" onclick="toggleKnowledge('k2')">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:white;">🍺 Как отказаться от алкоголя</div>
+        <i class="fas fa-chevron-down" style="color:var(--accent); transition:0.3s;" id="icon-k2"></i>
+      </div>
+      <div class="knowledge-body" id="k2" style="display:none; margin-top:12px;">
+        <div class="tip-card"><strong>1. Осознай зачем пьёшь.</strong> Расслабиться? Общаться? Найди замену — безалкогольные коктейли, чай, спорт.</div>
+        <div class="tip-card"><strong>2. Первые 7 дней — самые трудные.</strong> Организм перестраивается. Пей больше воды, ешь фрукты, высыпайся.</div>
+        <div class="tip-card"><strong>3. Измени окружение.</strong> Убери алкоголь из дома. Избегай мест где принято пить первые 30 дней.</div>
+        <div class="tip-card"><strong>4. Через 21 день.</strong> Сон улучшится, кожа посветлеет, энергия вырастет. Это твоя награда.</div>
+        <div class="tip-card"><strong>5. Срыв — не конец.</strong> Если сорвался — это не провал. Просто начни счётчик заново и разбери причину срыва.</div>
+      </div>
+    </div>
+
+    <div class="card knowledge-card" onclick="toggleKnowledge('k3')">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:white;">🍰 Как отказаться от сладкого</div>
+        <i class="fas fa-chevron-down" style="color:var(--accent); transition:0.3s;" id="icon-k3"></i>
+      </div>
+      <div class="knowledge-body" id="k3" style="display:none; margin-top:12px;">
+        <div class="tip-card"><strong>1. Сахар — это наркотик.</strong> Он активирует те же зоны мозга. Отказ вызывает ломку 3-5 дней — это нормально.</div>
+        <div class="tip-card"><strong>2. Замени, не убирай.</strong> Финики, бананы, горький шоколад 85%+, ягоды. Сладкое есть, но полезное.</div>
+        <div class="tip-card"><strong>3. Читай этикетки.</strong> Сахар прячется в соусах, хлебе, йогуртах. "0% жира" часто = много сахара.</div>
+        <div class="tip-card"><strong>4. Орехи и бобовые утром.</strong> Миндаль, грецкие орехи, нут на завтрак снижают тягу к сладкому на весь день.</div>
+        <div class="tip-card"><strong>5. Через 2 недели.</strong> Вкусовые рецепторы перестраиваются. Фрукты начнут казаться очень сладкими.</div>
+      </div>
+    </div>
+
+    <div class="card knowledge-card" onclick="toggleKnowledge('k4')">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:white;">🌱 Растительное питание</div>
+        <i class="fas fa-chevron-down" style="color:var(--accent); transition:0.3s;" id="icon-k4"></i>
+      </div>
+      <div class="knowledge-body" id="k4" style="display:none; margin-top:12px;">
+        <div class="tip-card"><strong>1. Китайское исследование.</strong> Колин Кэмпбелл (Корнелл/Оксфорд) доказал: чем больше животного белка — тем выше риск рака, диабета и болезней сердца. Растительная диета останавливает и обращает эти процессы.</div>
+        <div class="tip-card"><strong>2. Белок из растений.</strong> Чечевица, нут, тофу, темпе, киноа, гречка, орехи, семена — всё что нужно телу.</div>
+        <div class="tip-card"><strong>3. Железо и кальций.</strong> Шпинат, брокколи, кунжут, миндаль, инжир дают всё необходимое. Добавь витамин С для лучшего усвоения железа.</div>
+        <div class="tip-card"><strong>4. Переходи постепенно.</strong> Убирай одно животное блюдо в неделю. Тело адаптируется без стресса.</div>
+        <div class="tip-card"><strong>5. Результат через 30 дней.</strong> Легче дышать, меньше воспалений, больше энергии, ясность ума — замечают почти все.</div>
+      </div>
+    </div>
+
+    <div class="card knowledge-card" onclick="toggleKnowledge('k5')">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:white;">🧠 Психология привычек</div>
+        <i class="fas fa-chevron-down" style="color:var(--accent); transition:0.3s;" id="icon-k5"></i>
+      </div>
+      <div class="knowledge-body" id="k5" style="display:none; margin-top:12px;">
+        <div class="tip-card"><strong>1. Петля привычки.</strong> Сигнал → Желание → Действие → Награда. Меняй только действие, оставляй награду.</div>
+        <div class="tip-card"><strong>2. Правило 2 минут.</strong> Новая привычка должна занимать не более 2 минут для старта. Медитация начинается с 1 вдоха.</div>
+        <div class="tip-card"><strong>3. Среда важнее силы воли.</strong> Убери соблазны из поля зрения. Не покупай то что хочешь перестать есть.</div>
+        <div class="tip-card"><strong>4. Визуализация.</strong> Каждое утро представляй себя человеком без вредной привычки. Мозг начинает работать на этот образ.</div>
+        <div class="tip-card"><strong>5. Прогресс важнее совершенства.</strong> Никогда не пропускай два дня подряд — главное правило формирования привычки.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СООБЩЕСТВО -->
+  <section class="section" id="sec-community">
+    <div class="card" style="text-align:center; padding:24px;">
+      <div style="font-size:44px; margin-bottom:12px;">💪</div>
+      <div style="font-family:'Oswald',sans-serif; font-size:22px; letter-spacing:3px; color:white; margin-bottom:8px;">MIND STRATEGY</div>
+      <div style="font-size:13px; color:var(--muted); line-height:1.6;">Присоединяйся к сообществу людей которые меняют свою жизнь.</div>
+    </div>
+
+    <a href="https://www.youtube.com/@Mind.strategy" target="_blank" style="text-decoration:none;">
+      <div class="card community-card" style="display:flex; align-items:center; gap:16px; cursor:pointer;">
+        <div style="width:52px; height:52px; border-radius:12px; background:#ff0000; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i class="fab fa-youtube" style="font-size:26px; color:white;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:white;">YouTube канал</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">@Mind.strategy — видео о силе и свободе</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color:var(--accent);"></i>
+      </div>
+    </a>
+
+    <a href="https://t.me/mind_strategy" target="_blank" style="text-decoration:none;">
+      <div class="card community-card" style="display:flex; align-items:center; gap:16px; cursor:pointer;">
+        <div style="width:52px; height:52px; border-radius:12px; background:#229ED9; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i class="fab fa-telegram" style="font-size:26px; color:white;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:white;">Telegram канал</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">@mind_strategy — ежедневная мотивация</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color:var(--accent);"></i>
+      </div>
+    </a>
+
+    <a href="https://t.me/mind_strategy/444" target="_blank" style="text-decoration:none;">
+      <div class="card community-card" style="display:flex; align-items:center; gap:16px; cursor:pointer;">
+        <div style="width:52px; height:52px; border-radius:12px; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i class="fas fa-mountain" style="font-size:22px; color:white;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:white;">Место силы</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">Особый раздел для трансформации</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color:var(--accent);"></i>
+      </div>
+    </a>
+
+    <a href="https://web.tribute.tg/p/wDZ" target="_blank" style="text-decoration:none;">
+      <div class="card community-card" style="display:flex; align-items:center; gap:16px; cursor:pointer; border-color:var(--accent);">
+        <div style="width:52px; height:52px; border-radius:12px; background:var(--accent-dim); border:2px solid var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i class="fas fa-book" style="font-size:22px; color:var(--accent);"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:1px; color:var(--accent);">Моя книга</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">Владислав М. — профессиональный переговорщик, исследователь жизни и искатель приключений</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color:var(--accent);"></i>
+      </div>
+    </a>
+  </section>
+
+  <!-- КАЛЬКУЛЯТОР ЭКОНОМИИ -->
+  <section class="section" id="sec-savings">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-piggy-bank"></i> Сколько ты сэкономил</div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">Посчитай реальные деньги которые ты не потратил на вредные привычки.</p>
+
+      <div class="input-group">
+        <label>Сигареты в день (шт)</label>
+        <input type="number" id="cigPerDay" value="10" min="0" oninput="calcSavings()">
+      </div>
+      <div class="input-group">
+        <label>Цена пачки (руб)</label>
+        <input type="number" id="cigPrice" value="200" min="0" oninput="calcSavings()">
+      </div>
+      <div class="input-group">
+        <label>Алкоголь в неделю (руб)</label>
+        <input type="number" id="alcWeek" value="1000" min="0" oninput="calcSavings()">
+      </div>
+      <div class="input-group">
+        <label>Сладкое в неделю (руб)</label>
+        <input type="number" id="sweetWeek" value="500" min="0" oninput="calcSavings()">
+      </div>
+    </div>
+
+    <div class="card" id="savingsResult">
+      <div class="card-title"><i class="fas fa-coins"></i> Твоя экономия</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+        <div class="stat-badge"><div class="num" id="savDay">0</div><div class="label">за день ₽</div></div>
+        <div class="stat-badge"><div class="num" id="savWeek">0</div><div class="label">за неделю ₽</div></div>
+        <div class="stat-badge"><div class="num" id="savMonth">0</div><div class="label">за месяц ₽</div></div>
+        <div class="stat-badge"><div class="num" id="savYear">0</div><div class="label">за год ₽</div></div>
+      </div>
+      <div id="savingsDream" style="background:var(--accent-dim); border:1px solid var(--accent); border-radius:10px; padding:12px; font-size:13px; color:var(--accent); text-align:center; line-height:1.6;"></div>
     </div>
   </section>
 
@@ -821,12 +1049,128 @@ function markDayDone(){const today=new Date().toDateString();const last=localSto
 // КБЖУ
 function calcNutrition(){ const g=document.getElementById('nGender').value,a=+document.getElementById('nAge').value,h=+document.getElementById('nHeight').value,w=+document.getElementById('nWeight').value,goal=document.getElementById('nGoal').value; let bmr=g==='male'?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161; let tdee=bmr*1.55; if(goal==='lose')tdee*=0.85; if(goal==='gain')tdee*=1.15; const cal=Math.round(tdee),p=Math.round(w*1.8),f=Math.round(w*0.9),c=Math.round((cal-p*4-f*9)/4); document.getElementById('nutritionResult').style.display='block'; document.getElementById('macroGrid').innerHTML=`<div class="macro-item"><div class="macro-val" style="color:var(--accent)">${cal}</div><div class="macro-label">Ккал</div></div><div class="macro-item"><div class="macro-val" style="color:#ef5350">${p}г</div><div class="macro-label">Белки</div></div><div class="macro-item"><div class="macro-val" style="color:#42a5f5">${f}г</div><div class="macro-label">Жиры</div></div><div class="macro-item"><div class="macro-val" style="color:#66bb6a">${c}г</div><div class="macro-label">Углеводы</div></div>`; showToast('КБЖУ рассчитан!'); }
 
-// ПРИВЫЧКИ
-function renderHabits(){ const l=document.getElementById('habitsList');l.innerHTML='';const dl=['Пн','Вт','Ср','Чт','Пт','Сб','Вс']; habits.forEach(h=>{const st=h.days.filter(d=>d).length;let dhtml=dl.map((d,i)=>`<div class="habit-day ${h.days[i]?'done':''}" onclick="toggleHabitDay(${h.id},${i})">${d}</div>`).join(''); l.innerHTML+=`<div class="habit-item"><div class="habit-icon" style="background:${h.color}22;color:${h.color}"><i class="fas ${h.icon}"></i></div><div class="habit-info"><div class="habit-name">${h.name}</div><div class="habit-days">${dhtml}</div></div><div><div class="habit-streak">${st}</div><div class="habit-streak-label">дней</div></div></div>`;}); }
-function toggleHabitDay(id,i){const h=habits.find(x=>x.id===id);if(h){h.days[i]=h.days[i]?0:1;renderHabits();if(h.days.filter(d=>d).length===7) sendSystemMessage(`🏆 ${myNick} прошёл неделю без "${h.name}"!`);}}
+// ПРИВЫЧКИ — новый стиль счётчика
+function loadHabitsData() {
+  const saved = localStorage.getItem('habits_v3');
+  if(saved) {
+    const data = JSON.parse(saved);
+    if(data.length && typeof data[0].days === 'number') return data;
+  }
+  // Удаляем старые данные
+  localStorage.removeItem('habits_v2');
+  localStorage.removeItem('cl');
+  const fresh = [
+    {id:1, name:'Алкоголь', icon:'fa-wine-bottle', color:'#ef5350', days:0, lastAction:null, relapses:0},
+    {id:2, name:'Сладкое', icon:'fa-cookie-bite', color:'#ff7043', days:0, lastAction:null, relapses:0}
+  ];
+  localStorage.setItem('habits_v3', JSON.stringify(fresh));
+  return fresh;
+}
+function saveHabitsData(data) {
+  localStorage.setItem('habits_v3', JSON.stringify(data));
+}
+
+function renderHabits() {
+  const data = loadHabitsData();
+  const l = document.getElementById('habitsList');
+  if(!data.length) { l.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">Добавь первую привычку!</div>'; return; }
+  l.innerHTML = data.map(h => {
+    const maxDays = 30;
+    const pct = Math.min(h.days / maxDays * 100, 100);
+    const today = new Date().toDateString();
+    const doneToday = h.lastAction === today;
+    const lastTxt = doneToday ? '✅ Сегодня уже отмечено' : (h.lastAction ? `Последнее: ${h.lastAction}` : 'Ещё не начато');
+    return `<div class="habit-counter">
+      <div class="habit-counter-header">
+        <div class="habit-counter-icon" style="background:${h.color}22;color:${h.color}"><i class="fas ${h.icon}"></i></div>
+        <div class="habit-counter-name">${h.name}</div>
+        <button onclick="deleteHabit(${h.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="habit-counter-days">${h.days}</div>
+      <div class="habit-counter-label">дней без ${h.name.toLowerCase()}</div>
+      <div class="habit-counter-btns">
+        <button class="btn-add-day" onclick="addHabitDay(${h.id})" ${doneToday?'style="opacity:0.5"':''}><i class="fas fa-plus"></i> +1 ДЕНЬ</button>
+        <button class="btn-relapse" onclick="relapseHabit(${h.id})"><i class="fas fa-redo"></i> СРЫВ</button>
+      </div>
+      <div class="habit-streak-bar"><div class="habit-streak-fill" style="width:${pct}%"></div></div>
+      <div class="habit-last-action">${lastTxt} · Цель: 30 дней</div>
+    </div>`;
+  }).join('');
+}
+
+function addHabitDay(id) {
+  const data = loadHabitsData();
+  const h = data.find(x => x.id === id);
+  if(!h) return;
+  const today = new Date().toDateString();
+  if(h.lastAction === today) { showToast('Сегодня уже отмечено! 💪'); return; }
+  h.days++;
+  h.lastAction = today;
+  saveHabitsData(data);
+  renderHabits();
+  showToast(`+1 день! Серия: ${h.days} дн. 🔥`);
+  if(h.days === 7) showToast('🏆 Неделя без ' + h.name + '! Ты герой!');
+  if(h.days === 21) showToast('👑 21 день! Привычка сформирована!');
+  if(h.days === 30) showToast('🌟 30 дней! ЛЕГЕНДА!');
+}
+
+function relapseHabit(id) {
+  const data = loadHabitsData();
+  const h = data.find(x => x.id === id);
+  if(!h) return;
+  if(!confirm(`Сбросить счётчик "${h.name}"? Это не конец — начни снова!`)) return;
+  h.relapses = (h.relapses||0) + 1;
+  h.days = 0;
+  h.lastAction = null;
+  saveHabitsData(data);
+  renderHabits();
+  showToast('Срыв — не конец. Начни снова! 💪');
+}
+
+function deleteHabit(id) {
+  const data = loadHabitsData();
+  const idx = data.findIndex(x => x.id === id);
+  if(idx === -1) return;
+  if(!confirm('Удалить привычку?')) return;
+  data.splice(idx, 1);
+  saveHabitsData(data);
+  renderHabits();
+}
+
+function toggleHabitDay(id,i){} // оставляем для совместимости
 function openAddHabit(){document.getElementById('habitModal').classList.add('show');}
 function closeModal(){document.getElementById('habitModal').classList.remove('show');}
-function addHabit(){const n=document.getElementById('newHabitName').value.trim();if(!n){showToast('Введите название!');return;}habits.push({id:Date.now(),name:n,icon:'fa-ban',color:'#ffc107',days:[0,0,0,0,0,0,0]});closeModal();document.getElementById('newHabitName').value='';renderHabits();showToast('Привычка добавлена!');}
+function addHabit(){
+  const n=document.getElementById('newHabitName').value.trim();
+  if(!n){showToast('Введите название!');return;}
+  const data = loadHabitsData();
+  const colorList = ['#ef5350','#ff7043','#ab47bc','#42a5f5','#66bb6a','#ffc107','#26c6da','#ec407a'];
+  const iconMap = {
+    'алкоголь':'fa-wine-bottle', 'пиво':'fa-beer', 'вино':'fa-wine-glass',
+    'сладкое':'fa-cookie-bite', 'сахар':'fa-candy-cane', 'шоколад':'fa-cookie',
+    'курение':'fa-smoking', 'сигарет':'fa-smoking', 'табак':'fa-smoking',
+    'кофе':'fa-coffee', 'кофеин':'fa-coffee',
+    'соцсет':'fa-mobile-alt', 'телефон':'fa-mobile-alt', 'инстаграм':'fa-instagram', 'тикток':'fa-mobile-alt',
+    'вода':'fa-tint', 'спорт':'fa-running', 'бег':'fa-running', 'зарядка':'fa-dumbbell',
+    'сон':'fa-bed', 'поздно':'fa-moon', 'еда':'fa-utensils', 'фастфуд':'fa-hamburger',
+    'мясо':'fa-drumstick-bite', 'молоко':'fa-glass-whiskey', 'молочка':'fa-glass-whiskey',
+    'стресс':'fa-brain', 'тревога':'fa-heartbeat', 'нервы':'fa-heartbeat',
+    'игры':'fa-gamepad', 'азартные':'fa-dice', 'деньги':'fa-money-bill',
+    'переедание':'fa-utensils', 'диета':'fa-apple-alt',
+  };
+  let icon = 'fa-ban';
+  const nameLower = n.toLowerCase().replace(/\s+/g, '');
+  for(const [key, val] of Object.entries(iconMap)) {
+    if(nameLower.includes(key.replace(/\s+/g,''))) { icon = val; break; }
+  }
+  const color = colorList[data.length % colorList.length];
+  data.push({id:Date.now(), name:n, icon, color, days:0, lastAction:null, relapses:0});
+  saveHabitsData(data);
+  closeModal();
+  document.getElementById('newHabitName').value='';
+  renderHabits();
+  showToast('Привычка добавлена! 💪');
+}
 document.getElementById('habitModal').addEventListener('click',e=>{if(e.target.id==='habitModal')closeModal();});
 
 // ПИТАНИЕ
@@ -881,6 +1225,7 @@ function switchToTab(tab) {
   if(tab==='mood') renderDiary();
   if(tab==='notif') initNotif();
   if(tab==='feed') { if(myNick) initChat(); else document.getElementById('nickModal').classList.add('show'); }
+  if(tab==='savings') calcSavings();
   document.querySelector('.app-content').scrollTop=0;
 }
 document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -893,25 +1238,31 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
 
 // === ПРОГРЕСС ===
 function initProgress() {
-  const cl = JSON.parse(localStorage.getItem('cl')||'{}');
-  const days = Math.max(0, Object.values(cl).filter(Boolean).length);
+  const days = parseInt(localStorage.getItem('sila_days')||'0');
   document.getElementById('ringDays').textContent = days;
   const maxDays = 30;
   const pct = Math.min(days / maxDays, 1);
   const circ = 2 * Math.PI * 55;
   document.getElementById('progressRing').style.strokeDashoffset = circ - (circ * pct);
-  // Bars from habit data
-  const alco = habits.find(h=>h.name==='Алкоголь');
-  const sweet = habits.find(h=>h.name==='Сладкое');
-  const alcoD = alco ? alco.days.filter(d=>d).length : 0;
-  const sweetD = sweet ? sweet.days.filter(d=>d).length : 0;
-  setBar('barAlco','barAlcoVal', alcoD, 7);
-  setBar('barSweet','barSweetVal', sweetD, 7);
-  setBar('barWater','barWaterVal', waterCount, 8);
-  // Streak
-  let streak = 0;
-  for(let i=Object.keys(cl).length-1;i>=0;i--) { if(cl[i]) streak++; else break; }
-  document.getElementById('streakNum').textContent = streak;
+
+  // Динамически строим полоски из всех привычек
+  const habitsData = loadHabitsData();
+  const colors = ['#ef5350','#ff7043','#ab47bc','#42a5f5','#66bb6a','#ffc107'];
+  const barsHtml = habitsData.map((h, i) => {
+    const pct = Math.min(h.days / 30 * 100, 100);
+    const color = h.color || colors[i % colors.length];
+    return `<div class="bar-row">
+      <div class="bar-label">${h.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};transition:width 0.8s ease;"></div></div>
+      <div class="bar-val" style="color:${color}">${h.days}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('progressBars').innerHTML = barsHtml;
+
+  // Серия — максимум среди всех привычек
+  const maxStreak = habitsData.reduce((max, h) => Math.max(max, h.days), 0);
+  document.getElementById('streakNum').textContent = maxStreak;
+
   // Week grid
   const g = document.getElementById('weekGrid');
   const dNames = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
@@ -919,10 +1270,7 @@ function initProgress() {
   g.innerHTML = '';
   for(let i=0;i<7;i++) {
     const idx = (today - 6 + i + 7) % 7;
-    const done = cl[i] ? true : false;
-    const water = i === today ? waterCount >= 8 : false;
-    const cls = done ? 'week-cell full' : (water ? 'week-cell has-entry' : 'week-cell');
-    g.innerHTML += `<div class="${cls}"><span style="font-size:9px;">${dNames[idx]}</span>${done?'✓':''}</div>`;
+    g.innerHTML += `<div class="week-cell"><span style="font-size:9px;">${dNames[idx]}</span></div>`;
   }
 }
 function setBar(barId, valId, val, max) {
@@ -1073,6 +1421,36 @@ function renderNotifHistory(){
       <div class="notif-icon"><i class="fas fa-bell"></i></div>
       <div class="notif-info"><div class="notif-title">${h.text}</div><div class="notif-time">${h.time}</div></div>
     </div>`).join('');
+}
+
+// === ЗНАНИЯ ===
+function toggleKnowledge(id) {
+  const body = document.getElementById(id);
+  const icon = document.getElementById('icon-' + id);
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+// === КАЛЬКУЛЯТОР ЭКОНОМИИ ===
+function calcSavings() {
+  const cig = parseFloat(document.getElementById('cigPerDay').value) || 0;
+  const cigP = parseFloat(document.getElementById('cigPrice').value) || 0;
+  const alc = parseFloat(document.getElementById('alcWeek').value) || 0;
+  const sweet = parseFloat(document.getElementById('sweetWeek').value) || 0;
+  const cigDay = (cig / 20) * cigP;
+  const alcDay = alc / 7;
+  const sweetDay = sweet / 7;
+  const perDay = Math.round(cigDay + alcDay + sweetDay);
+  const perWeek = Math.round(perDay * 7);
+  const perMonth = Math.round(perDay * 30);
+  const perYear = Math.round(perDay * 365);
+  document.getElementById('savDay').textContent = perDay.toLocaleString('ru');
+  document.getElementById('savWeek').textContent = perWeek.toLocaleString('ru');
+  document.getElementById('savMonth').textContent = perMonth.toLocaleString('ru');
+  document.getElementById('savYear').textContent = perYear.toLocaleString('ru');
+  document.getElementById('savingsDream').innerHTML =
+    `💡 За год ты сэкономишь <strong style="color:var(--accent)">${perYear.toLocaleString('ru')} ₽</strong> — это реальные деньги которые раньше уходили на разрушение твоего здоровья.`;
 }
 
 // СПЛЭШ ЭКРАН
