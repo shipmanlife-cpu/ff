@@ -709,13 +709,7 @@
   <section class="section" id="sec-notif">
     <div class="card">
       <div class="card-title"><i class="fas fa-bell"></i> Напоминания</div>
-      <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">Разреши уведомления — и приложение будет напоминать тебе о важном.</p>
-      <button class="btn btn-primary" onclick="requestNotifPermission()" id="notifPermBtn" style="width:100%; margin-bottom:16px;"><i class="fas fa-bell"></i> Включить уведомления</button>
-      <div id="notifPermStatus" style="font-size:12px; color:var(--muted); text-align:center; margin-bottom:12px;"></div>
-      <div class="toggle-wrap">
-        <span class="toggle-label">💧 Напоминание о воде</span>
-        <label class="toggle"><input type="checkbox" id="togWater" onchange="saveNotifSettings()"><span class="toggle-slider"></span></label>
-      </div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:16px; line-height:1.6;">В APK версии уведомления работают через Android. Настрой время напоминаний ниже — приложение будет отмечать их в истории.</p>
       <div class="toggle-wrap">
         <span class="toggle-label">🌅 Утренняя мотивация (8:00)</span>
         <label class="toggle"><input type="checkbox" id="togMorning" onchange="saveNotifSettings()"><span class="toggle-slider"></span></label>
@@ -725,9 +719,14 @@
         <label class="toggle"><input type="checkbox" id="togEvening" onchange="saveNotifSettings()"><span class="toggle-slider"></span></label>
       </div>
       <div class="toggle-wrap">
-        <span class="toggle-label">🔥 Напоминание о привычках</span>
+        <span class="toggle-label">🔥 Напоминание о привычках (12:00)</span>
         <label class="toggle"><input type="checkbox" id="togHabits" onchange="saveNotifSettings()"><span class="toggle-slider"></span></label>
       </div>
+      <div class="toggle-wrap">
+        <span class="toggle-label">💧 Напоминание о воде</span>
+        <label class="toggle"><input type="checkbox" id="togWater" onchange="saveNotifSettings()"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
     </div>
     <div class="card">
       <div class="card-title"><i class="fas fa-clock"></i> Последние уведомления</div>
