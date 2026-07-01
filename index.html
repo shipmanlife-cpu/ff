@@ -1528,7 +1528,47 @@ function calcSavings() {
     `💡 За год ты сэкономишь <strong style="color:var(--accent)">${perYear.toLocaleString('ru')} ₽</strong> — это реальные деньги которые раньше уходили на разрушение твоего здоровья.`;
 }
 
-// СПЛЭШ ЭКРАН
+// АВТООБНОВЛЕНИЕ
+const APP_VERSION = '1.4';
+function checkUpdate() {
+  fetch('/ff/version.json?t=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      if(data.version !== APP_VERSION) {
+        showUpdateToast(data.version);
+      }
+    }).catch(() => {});
+}
+
+function showUpdateToast(newVer) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.cssText = 'pointer-events:all; cursor:pointer; border-color:#42a5f5;';
+  t.innerHTML = `<i class="fas fa-sync" style="color:#42a5f5"></i> Доступно обновление v${newVer}! <strong style="color:#42a5f5; margin-left:4px;">Обновить</strong>`;
+  t.onclick = () => forceUpdate();
+  c.appendChild(t);
+}
+
+function forceUpdate() {
+  if('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
+  }
+  // Очищаем кэш
+  if('caches' in window) {
+    caches.keys().then(keys => {
+      keys.forEach(k => caches.delete(k));
+    });
+  }
+  showToast('Обновление...');
+  setTimeout(() => location.reload(true), 1000);
+}
+
+// Проверяем обновление при запуске и каждые 30 минут
+setTimeout(checkUpdate, 3000);
+setInterval(checkUpdate, 30 * 60 * 1000);
 const splashQuotes = [
   "Каждый день без срыва — это победа.",
   "Твоё тело благодарит тебя за каждый выбор.",
