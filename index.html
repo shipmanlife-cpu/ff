@@ -1364,30 +1364,30 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
 
 // === ПРОГРЕСС ===
 function initProgress() {
-  const days = parseInt(localStorage.getItem('sila_days')||'0');
-  document.getElementById('ringDays').textContent = days;
-  const maxDays = 30;
-  const pct = Math.min(days / maxDays, 1);
+  const habitsData = loadHabitsData();
+  const maxDays = habitsData.length > 0 ? Math.max(...habitsData.map(h => h.days)) : 0;
+
+  // Кольцо — показываем максимум дней
+  document.getElementById('ringDays').textContent = maxDays;
+  const pct = Math.min(maxDays / 30, 1);
   const circ = 2 * Math.PI * 55;
   document.getElementById('progressRing').style.strokeDashoffset = circ - (circ * pct);
 
-  // Динамически строим полоски из всех привычек
-  const habitsData = loadHabitsData();
+  // Полоски
   const colors = ['#ef5350','#ff7043','#ab47bc','#42a5f5','#66bb6a','#ffc107'];
   const barsHtml = habitsData.map((h, i) => {
-    const pct = Math.min(h.days / 30 * 100, 100);
+    const barPct = Math.min(h.days / 30 * 100, 100);
     const color = h.color || colors[i % colors.length];
     return `<div class="bar-row">
       <div class="bar-label">${h.name}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};transition:width 0.8s ease;"></div></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;background:${color};transition:width 0.8s ease;"></div></div>
       <div class="bar-val" style="color:${color}">${h.days}</div>
     </div>`;
   }).join('');
-  document.getElementById('progressBars').innerHTML = barsHtml;
+  document.getElementById('progressBars').innerHTML = barsHtml || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:10px;">Добавь привычки в трекере</div>';
 
-  // Серия — максимум среди всех привычек
-  const maxStreak = habitsData.reduce((max, h) => Math.max(max, h.days), 0);
-  document.getElementById('streakNum').textContent = maxStreak;
+  // Серия
+  document.getElementById('streakNum').textContent = maxDays;
 
   // Week grid
   const g = document.getElementById('weekGrid');
@@ -1396,7 +1396,8 @@ function initProgress() {
   g.innerHTML = '';
   for(let i=0;i<7;i++) {
     const idx = (today - 6 + i + 7) % 7;
-    g.innerHTML += `<div class="week-cell"><span style="font-size:9px;">${dNames[idx]}</span></div>`;
+    const active = i === 6 && maxDays > 0;
+    g.innerHTML += `<div class="week-cell ${active?'full':''}"><span style="font-size:9px;">${dNames[idx]}</span>${active?'✓':''}</div>`;
   }
 }
 function setBar(barId, valId, val, max) {
