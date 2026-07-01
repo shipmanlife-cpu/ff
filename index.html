@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <style>
   :root {
@@ -334,15 +333,16 @@
       <span id="chatStatus" style="font-size:10px; color:var(--muted); font-family:'Oswald',sans-serif; letter-spacing:1px;">⏳ Загрузка...</span>
     </div>
 
-    <!-- Экран входа (показывается если не авторизован) -->
+    <!-- Экран входа -->
     <div id="chatAuthScreen" style="display:none;">
       <div class="card" style="text-align:center; padding:30px 20px;">
         <div style="font-size:48px; margin-bottom:16px;">💬</div>
         <div style="font-family:'Oswald',sans-serif; font-size:20px; letter-spacing:2px; margin-bottom:8px;">ЛЕНТА СИЛЫ</div>
-        <div style="font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.6;">Общайся с теми, кто тоже борется с вредными привычками. Войди через Google чтобы начать.</div>
-        <button onclick="signInWithGoogle()" style="display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:14px; background:white; color:#333; border:none; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.3);">
-          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-          Войти через Google
+        <div style="font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.6;">Общайся с теми, кто тоже борется с вредными привычками.</div>
+        <input type="text" id="chatNickInput" placeholder="Введи своё имя..." maxlength="20"
+          style="width:100%; padding:14px; background:var(--bg2); border:1px solid var(--border); border-radius:12px; color:white; font-size:16px; outline:none; margin-bottom:12px; text-align:center;">
+        <button onclick="signInWithNick()" style="width:100%; padding:14px; background:var(--accent); color:#000; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; font-family:'Oswald',sans-serif; letter-spacing:2px;">
+          💪 ВОЙТИ В ЧАТ
         </button>
       </div>
     </div>
@@ -806,6 +806,17 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
+// Firebase инициализация
+firebase.initializeApp({
+  apiKey: "AIzaSyBPjERk3I3-lajfW0s9M_WI_m5LFXRDQU0",
+  authDomain: "sila-svoboda-uspeh.firebaseapp.com",
+  projectId: "sila-svoboda-uspeh",
+  storageBucket: "sila-svoboda-uspeh.firebasestorage.app",
+  messagingSenderId: "41469515012",
+  appId: "1:41469515012:web:14381d4b1a834ad0baac51"
+});
+const db = firebase.firestore();
+
 const quotes=["Сила — в том, чтобы подниматься каждый раз.","Ты — хозяин своих привычек.","Каждый день без срыва — кирпич в новую жизнь.","Свобода начинается там, где заканчивается зависимость.","Успех — сумма маленьких усилий изо дня в день."];
 const checklistItems=["Водный баланс","Порция овощей","Без сладкого","Активность","Не есть за 4-6 часов до сна","Без алкоголя","Без курения","Осознанность"];
 let habits=[{id:1,name:"Алкоголь",icon:"fa-wine-bottle",color:"#ef5350",days:[1,1,1,1,1,0,0]},{id:2,name:"Сладкое",icon:"fa-cookie-bite",color:"#ff7043",days:[1,1,0,1,1,1,0]}];
@@ -864,85 +875,72 @@ const weeklyMeals = [
   }
 ];
 
-// =============================================
-// ЧАТ НА FIREBASE + GOOGLE AUTH + БАНЫ
-// =============================================
-firebase.initializeApp({
-  apiKey: "AIzaSyBPjERk3I3-lajfW0s9M_WI_m5LFXRDQU0",
-  authDomain: "sila-svoboda-uspeh.firebaseapp.com",
-  projectId: "sila-svoboda-uspeh",
-  storageBucket: "sila-svoboda-uspeh.firebasestorage.app",
-  messagingSenderId: "41469515012",
-  appId: "1:41469515012:web:14381d4b1a834ad0baac51"
-});
-const db = firebase.firestore();
-const auth = firebase.auth();
-const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-// ТВОЙ ADMIN EMAIL — замени на свой Google email!
-const ADMIN_EMAIL = 'shipmanlife@gmail.com';
+// ЧАТ — простая авторизация по имени (без Google)
 let currentUser = null;
 let isAdmin = false;
 let chatUnsubscribe = null;
 
-// Войти через Google — используем redirect вместо popup для WebView
-async function signInWithGoogle() {
-  try {
-    // Redirect работает лучше в WebView/мобильных браузерах
-    await auth.signInWithRedirect(googleProvider);
-  } catch(e) {
-    showToast('Ошибка входа: ' + e.message);
-  }
+const ADMIN_NICK = 'Владислав'; // твой ник для админки
+
+function signInWithNick() {
+  const inp = document.getElementById('chatNickInput');
+  const nick = inp ? inp.value.trim() : '';
+  if(!nick) { showToast('Введи имя!'); return; }
+  if(nick.length < 2) { showToast('Имя слишком короткое!'); return; }
+  myNick = nick;
+  myUid = localStorage.getItem('sila_uid') || ('u_' + Math.random().toString(36).substr(2,10));
+  localStorage.setItem('sila_uid', myUid);
+  localStorage.setItem('sila_nick', myNick);
+  currentUser = { uid: myUid, displayName: myNick, photoURL: null, email: null };
+  isAdmin = (myNick === ADMIN_NICK);
+  showChatUI();
+  initChat();
 }
 
-// Проверяем результат redirect при загрузке
-auth.getRedirectResult().then(result => {
-  if(result && result.user) {
-    console.log('Redirect login success:', result.user.email);
-  }
-}).catch(e => {
-  if(e.code !== 'auth/no-auth-event') {
-    console.error('Redirect error:', e);
-  }
-});
-
-// Выйти
-async function signOut() {
+function signOut() {
   if(chatUnsubscribe) chatUnsubscribe();
-  await auth.signOut();
+  currentUser = null;
+  myNick = '';
+  localStorage.removeItem('sila_nick');
+  hideChatUI();
 }
 
-// Слушаем изменения авторизации
-auth.onAuthStateChanged(user => {
-  currentUser = user;
-  if(user) {
-    isAdmin = (user.email === ADMIN_EMAIL);
-    // Показываем чат
-    document.getElementById('chatAuthScreen').style.display = 'none';
-    document.getElementById('chatUserBar').style.display = 'block';
-    document.getElementById('chatMain').style.display = 'flex';
-    // Заполняем профиль
-    document.getElementById('chatUserName').textContent = user.displayName || user.email;
-    document.getElementById('chatUserAvatar').src = user.photoURL || '';
-    // Сохраняем ник для других функций
-    myNick = user.displayName || user.email;
-    myUid = user.uid;
-    localStorage.setItem('sila_nick', myNick);
-    // Запускаем чат
-    initChat();
-    if(isAdmin) {
-      document.getElementById('adminPanel').style.display = 'block';
-      loadBannedList();
-    }
-  } else {
-    // Показываем экран входа
-    document.getElementById('chatAuthScreen').style.display = 'block';
-    document.getElementById('chatUserBar').style.display = 'none';
-    document.getElementById('chatMain').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'none';
-    if(chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+function showChatUI() {
+  document.getElementById('chatAuthScreen').style.display = 'none';
+  document.getElementById('chatUserBar').style.display = 'block';
+  document.getElementById('chatMain').style.display = 'flex';
+  document.getElementById('chatUserName').textContent = myNick;
+  document.getElementById('chatUserAvatar').src = '';
+  if(isAdmin) {
+    document.getElementById('adminPanel').style.display = 'block';
+    loadBannedList();
   }
-});
+}
+
+function hideChatUI() {
+  document.getElementById('chatAuthScreen').style.display = 'block';
+  document.getElementById('chatUserBar').style.display = 'none';
+  document.getElementById('chatMain').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'none';
+  if(chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+}
+
+// Автовход если имя уже сохранено
+const savedNick = localStorage.getItem('sila_nick');
+if(savedNick) {
+  myNick = savedNick;
+  myUid = localStorage.getItem('sila_uid') || ('u_' + Math.random().toString(36).substr(2,10));
+  localStorage.setItem('sila_uid', myUid);
+  currentUser = { uid: myUid, displayName: myNick, photoURL: null, email: null };
+  isAdmin = (myNick === ADMIN_NICK);
+  setTimeout(() => {
+    const sec = document.getElementById('sec-feed');
+    if(sec && sec.classList.contains('active')) {
+      showChatUI();
+      initChat();
+    }
+  }, 500);
+}
 
 let myNick = localStorage.getItem('sila_nick') || '';
 let myUid = localStorage.getItem('sila_uid') || ('u_' + Math.random().toString(36).substr(2,10));
