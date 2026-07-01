@@ -9,7 +9,8 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <style>
   :root {
@@ -105,6 +106,16 @@
   .game-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:20; text-align:center; padding:20px; }
   .game-overlay.hidden { display:none; }
 
+  .msg-deleted { color:var(--muted) !important; font-style:italic; background:var(--bg2) !important; border:1px dashed var(--border) !important; }
+  .msg-admin-btns { display:flex; gap:6px; margin-top:4px; padding:0 12px; }
+  .msg-admin-btn { border:none; border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; font-family:'Oswald',sans-serif; letter-spacing:1px; }
+  .btn-ban { background:#ef535022; color:#ef5350; border:1px solid #ef535044; }
+  .btn-del { background:#ff700322; color:#ff7043; border:1px solid #ff704344; }
+  .admin-panel { background:rgba(255,193,7,0.06); border:1px solid rgba(255,193,7,0.3); border-radius:12px; padding:12px; margin-bottom:12px; }
+  .admin-panel-title { font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:2px; color:var(--accent); margin-bottom:8px; }
+  .banned-list-item { display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:13px; }
+  .unban-btn { background:var(--success); color:#000; border:none; border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer; font-family:'Oswald',sans-serif; }
+
   .chat-container { flex:1; display:flex; flex-direction:column; overflow:hidden; }
   .chat-messages { flex:1; overflow-y:auto; padding-bottom:16px; }
   .msg-bubble { margin-bottom:10px; display:flex; flex-direction:column; }
@@ -188,15 +199,47 @@
   .toggle input:checked + .toggle-slider { background:var(--accent); }
   .toggle input:checked + .toggle-slider:before { transform:translateX(20px); background:#000; }
   .notif-dot { position:absolute; top:-3px; right:-3px; width:8px; height:8px; background:var(--danger); border-radius:50%; display:none; }
+
+  /* СПЛЭШ ЭКРАН */
+  #splashScreen { position:fixed; top:0; left:0; width:100%; height:100%; background:#050505; z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; transition:opacity 0.6s ease; }
+  #splashScreen.hide { opacity:0; pointer-events:none; }
+  .splash-logo { font-family:'Oswald',sans-serif; font-size:38px; font-weight:700; letter-spacing:6px; color:var(--accent); text-shadow:0 0 30px rgba(255,193,7,0.6); animation:splashPulse 1.5s ease infinite; }
+  .splash-sub { font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:4px; color:rgba(255,255,255,0.4); margin-top:8px; text-transform:uppercase; }
+  .splash-line { width:60px; height:2px; background:var(--accent); border-radius:2px; margin-top:24px; animation:splashLine 1.5s ease infinite; box-shadow:0 0 10px rgba(255,193,7,0.5); }
+  .splash-quote { font-size:13px; color:rgba(255,255,255,0.3); margin-top:40px; font-style:italic; text-align:center; padding:0 40px; line-height:1.6; }
+  @keyframes splashPulse { 0%,100%{text-shadow:0 0 20px rgba(255,193,7,0.4)} 50%{text-shadow:0 0 40px rgba(255,193,7,0.9)} }
+  @keyframes splashLine { 0%,100%{width:40px;opacity:0.5} 50%{width:100px;opacity:1} }
+  /* ADMIN / BAN */
+  .msg-admin-btns { display:none; gap:6px; margin-top:4px; }
+  .msg-bubble:hover .msg-admin-btns { display:flex; }
+  .msg-admin-btn { font-size:10px; padding:3px 8px; border-radius:6px; border:none; cursor:pointer; font-family:'Oswald',sans-serif; letter-spacing:1px; }
+  .btn-ban { background:var(--danger); color:white; }
+  .btn-del { background:#444; color:white; }
+  .banned-badge { font-size:9px; background:var(--danger); color:white; padding:2px 6px; border-radius:4px; margin-left:6px; letter-spacing:1px; }
+  .admin-panel { background:rgba(239,83,80,0.1); border:1px solid var(--danger); border-radius:12px; padding:12px; margin-bottom:10px; }
+  .admin-panel-title { font-family:'Oswald',sans-serif; font-size:13px; color:var(--danger); letter-spacing:2px; margin-bottom:8px; }
+  .banned-list-item { display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:13px; }
+  .unban-btn { font-size:10px; padding:3px 8px; border-radius:6px; border:none; cursor:pointer; background:var(--success); color:white; font-family:'Oswald',sans-serif; }
+  .msg-deleted { opacity:0.3; font-style:italic; font-size:12px; }
 </style>
 </head>
 <body>
+
+<div id="splashScreen">
+  <div class="splash-logo">СИЛА</div>
+  <div class="splash-sub">СВОБОДА · УСПЕХ</div>
+  <div class="splash-line"></div>
+  <div class="splash-quote" id="splashQuoteText"></div>
+</div>
 
 <div class="bg-atmosphere"></div>
 
 <header class="app-header">
   <div class="brand">СИЛА<span>.СВОБОДА</span>.УСПЕХ</div>
-  <button class="install-btn" id="installBtn" style="display:none;"><i class="fas fa-download"></i> Установить</button>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="install-btn" id="installBtn" style="display:none;"><i class="fas fa-download"></i> Установить</button>
+    <button onclick="tryAdminLogin()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;" title="Вход для администратора"><i class="fas fa-shield-alt"></i></button>
+  </div>
 </header>
 
 <div class="app-content">
@@ -222,11 +265,20 @@
   </section>
 
   <section class="section" id="sec-feed">
-    <div class="card-title" style="padding:0; margin:0 0 12px 0; font-size:20px; color:white;"><i class="fas fa-comments" style="color:var(--accent)"></i> Лента силы</div>
+    <div class="card-title" style="padding:0; margin:0 0 8px 0; font-size:20px; color:white; display:flex; align-items:center; justify-content:space-between;">
+      <span><i class="fas fa-comments" style="color:var(--accent)"></i> Лента силы</span>
+      <span id="chatStatus" style="font-size:10px; color:var(--muted); font-family:'Oswald',sans-serif; letter-spacing:1px;">⏳ Загрузка...</span>
+    </div>
+    <!-- Админ-панель (видна только тебе) -->
+    <div class="admin-panel" id="adminPanel" style="display:none;">
+      <div class="admin-panel-title">🛡 ADMIN PANEL</div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">Забаненные пользователи:</div>
+      <div id="bannedList"><div style="font-size:12px; color:var(--muted);">Никто не забанен</div></div>
+    </div>
     <div class="chat-container">
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Написать сообщение...">
+        <input type="text" id="chatInput" placeholder="Написать сообщение..." maxlength="300">
         <button class="chat-send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
       </div>
     </div>
@@ -248,7 +300,7 @@
 
   <section class="section" id="sec-meals">
     <div class="card">
-      <div class="card-title"><i class="fas fa-calculator"></i> Калькулятор КБЖУ</div>
+      <div class="card-title"><i class="fas fa-calculator"></i> Расчёт КБЖУ</div>
       <div class="input-row">
         <div class="input-group"><label>Пол</label><select id="nGender"><option value="male">Мужской</option><option value="female">Женский</option></select></div>
         <div class="input-group"><label>Возраст</label><input type="number" id="nAge" value="25"></div>
@@ -266,10 +318,6 @@
       <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span style="color:var(--muted)">Выпито</span><span style="color:var(--accent); font-weight:600;" id="waterCount">0 / 8</span></div>
       <div style="height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; margin-bottom:10px;"><div id="waterBar" style="height:100%; width:0%; background:linear-gradient(90deg,#42a5f5,#90caf9); transition:width 0.5s; border-radius:3px;"></div></div>
       <div class="water-tracker" id="waterTracker"></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="fas fa-clock"></i> Рацион на день</div>
-      <div id="mealPlan"></div>
     </div>
   </section>
 
@@ -348,11 +396,14 @@
     <div class="card">
       <div class="card-title"><i class="fas fa-th"></i> Разделы</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <button class="btn btn-outline" onclick="switchToTab('feed')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
-          <i class="fas fa-comments" style="font-size:22px;"></i><span style="font-size:11px;">Чат</span>
+        <button class="btn btn-outline" onclick="switchToTab('profile')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
+          <i class="fas fa-user" style="font-size:22px;"></i><span style="font-size:11px;">Профиль</span>
         </button>
         <button class="btn btn-outline" onclick="switchToTab('meals')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
-          <i class="fas fa-utensils" style="font-size:22px;"></i><span style="font-size:11px;">Питание</span>
+          <i class="fas fa-calculator" style="font-size:22px;"></i><span style="font-size:11px;">Расчёт КБЖУ</span>
+        </button>
+        <button class="btn btn-outline" style="padding:16px; flex-direction:column; gap:6px; height:auto; opacity:0.5; cursor:default;">
+          <i class="fas fa-book-open" style="font-size:22px;"></i><span style="font-size:11px;">Рецепты</span><span style="font-size:9px; color:var(--accent); letter-spacing:1px;">СКОРО</span>
         </button>
         <button class="btn btn-outline" onclick="switchToTab('game')" style="padding:16px; flex-direction:column; gap:6px; height:auto;">
           <i class="fas fa-gamepad" style="font-size:22px;"></i><span style="font-size:11px;">Игра</span>
@@ -442,8 +493,8 @@
 <nav class="app-nav">
   <button class="nav-tab active" data-tab="home"><i class="fas fa-home"></i>Главная</button>
   <button class="nav-tab" data-tab="habits"><i class="fas fa-ban"></i>Привычки</button>
+  <button class="nav-tab" data-tab="feed"><i class="fas fa-comments"></i>Чат</button>
   <button class="nav-tab" data-tab="progress"><i class="fas fa-chart-line"></i>Прогресс</button>
-  <button class="nav-tab" data-tab="profile"><i class="fas fa-user"></i>Профиль</button>
   <button class="nav-tab" data-tab="more" id="moreTab"><i class="fas fa-ellipsis-h"></i>Ещё<span class="notif-dot" id="navDot"></span></button>
 </nav>
 
@@ -471,7 +522,7 @@
 
 <script>
 const quotes=["Сила — в том, чтобы подниматься каждый раз.","Ты — хозяин своих привычек.","Каждый день без срыва — кирпич в новую жизнь.","Свобода начинается там, где заканчивается зависимость.","Успех — сумма маленьких усилий изо дня в день."];
-const checklistItems=["8 стаканов воды","Порция овощей","Белок в каждом приёме","Без сладкого","30 мин активности","Сон до 23:00","Без алкоголя","Осознанность"];
+const checklistItems=["Водный баланс","Порция овощей","Без сладкого","Активность","Не есть за 4-6 часов до сна","Без алкоголя","Без курения","Осознанность"];
 let habits=[{id:1,name:"Алкоголь",icon:"fa-wine-bottle",color:"#ef5350",days:[1,1,1,1,1,0,0]},{id:2,name:"Сладкое",icon:"fa-cookie-bite",color:"#ff7043",days:[1,1,0,1,1,1,0]}];
 let waterCount=0, totalBottles=0;
 
@@ -528,91 +579,202 @@ const weeklyMeals = [
   }
 ];
 
-// --- НОВЫЙ ЧАТ НА MQTT ---
+// =============================================
+// ЧАТ НА FIREBASE + СИСТЕМА БАНОВ
+// =============================================
+
+// Твой Firebase конфиг
+firebase.initializeApp({
+  apiKey: "AIzaSyBPjERk3I3-lajfW0s9M_WI_m5LFXRDQU0",
+  authDomain: "sila-svoboda-uspeh.firebaseapp.com",
+  projectId: "sila-svoboda-uspeh",
+  storageBucket: "sila-svoboda-uspeh.firebasestorage.app",
+  messagingSenderId: "41469515012",
+  appId: "1:41469515012:web:14381d4b1a834ad0baac51"
+});
+const db = firebase.firestore();
+
+// ТВОЙ СЕКРЕТНЫЙ ПАРОЛЬ АДМИНА — поменяй на свой!
+const ADMIN_PASSWORD = 'sila2024admin';
+let isAdmin = localStorage.getItem('sila_admin') === 'true';
+
 let myNick = localStorage.getItem('sila_nick') || '';
-let clientId = 'sila_app_' + Math.random().toString(36).substr(2, 9);
-const chatTopic = 'sila/svoboda/uspeh/chat/v1';
+let myUid = localStorage.getItem('sila_uid') || ('u_' + Math.random().toString(36).substr(2,10));
+localStorage.setItem('sila_uid', myUid);
 
-const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-    clientId: clientId,
-    clean: true,
-    connectTimeout: 4000,
-    reconnectPeriod: 1000
-});
+// Проверка: забанен ли текущий пользователь
+async function isBanned(uid) {
+  const doc = await db.collection('banned').doc(uid).get();
+  return doc.exists;
+}
 
-client.on('connect', () => {
-    console.log('Чат подключен к серверу!');
-    client.subscribe(chatTopic, { qos: 0 });
-});
-
-client.on('error', (err) => {
-    console.error('Ошибка чата:', err);
-});
-
-function appendMessage(msg, isMe = false) {
-    const list = document.getElementById('chatMessages');
-    const isSys = msg.author === 'Система';
-    const div = document.createElement('div');
-    div.className = 'msg-bubble ' + (isSys ? 'msg-system' : (isMe ? 'me' : ''));
-    
-    const t = new Date(msg.time);
-    const ts = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
-    
+// Отобразить сообщение в чате
+function appendMessage(data, docId) {
+  const list = document.getElementById('chatMessages');
+  if(!list) return;
+  const isSys = data.author === 'Система';
+  const isMe = data.uid === myUid;
+  const div = document.createElement('div');
+  div.className = 'msg-bubble ' + (isSys ? 'msg-system' : (isMe ? 'me' : ''));
+  div.dataset.id = docId;
+  div.dataset.uid = data.uid || '';
+  div.dataset.author = data.author || '';
+  const t = data.time ? new Date(data.time.seconds * 1000) : new Date();
+  const ts = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
+  if(data.deleted) {
+    div.innerHTML = `<div class="msg-text msg-deleted">сообщение удалено</div>`;
+  } else {
+    const adminBtns = (isAdmin && !isMe && !isSys) ? `
+      <div class="msg-admin-btns">
+        <button class="msg-admin-btn btn-ban" onclick="banUser('${data.uid}','${data.author}')">🚫 Бан</button>
+        <button class="msg-admin-btn btn-del" onclick="deleteMsg('${docId}')">🗑 Удалить</button>
+      </div>` : '';
     div.innerHTML = `
-      ${!isSys ? `<div class="msg-author">${msg.author} <span style="opacity:0.5; font-size:9px; margin-left:4px;">${ts}</span></div>` : ''}
-      <div class="msg-text">${msg.text}</div>
+      ${!isSys ? `<div class="msg-author">${data.author}<span style="opacity:0.5;font-size:9px;margin-left:4px;">${ts}</span></div>` : ''}
+      <div class="msg-text">${data.text}</div>
+      ${adminBtns}
     `;
-    list.appendChild(div);
-    list.scrollTop = list.scrollHeight;
+  }
+  // Избегаем дублей
+  const existing = list.querySelector(`[data-id="${docId}"]`);
+  if(existing) { existing.replaceWith(div); } else { list.appendChild(div); }
+  list.scrollTop = list.scrollHeight;
 }
 
-client.on('message', (topic, message) => {
-    const msg = JSON.parse(message.toString());
-    if (msg.clientId === clientId) return;
-    appendMessage(msg, false);
-});
-
-function sendMessage() {
-    const i = document.getElementById('chatInput');
-    const t = i.value.trim();
-    if(!t || !myNick) return;
-    
-    const msg = {
-        clientId: clientId,
-        author: myNick,
-        text: t,
-        time: Date.now()
-    };
-    
-    client.publish(chatTopic, JSON.stringify(msg), { qos: 0 });
-    appendMessage(msg, true);
-    i.value = '';
+// Загрузка сообщений + live обновления
+function initChat() {
+  const status = document.getElementById('chatStatus');
+  const list = document.getElementById('chatMessages');
+  if(!list) return;
+  list.innerHTML = '';
+  db.collection('messages')
+    .orderBy('time', 'asc')
+    .limitToLast(60)
+    .onSnapshot(snapshot => {
+      if(status) { status.textContent = '🟢 В сети'; status.style.color = 'var(--success)'; }
+      snapshot.docChanges().forEach(change => {
+        if(change.type === 'added') {
+          appendMessage(change.doc.data(), change.doc.id);
+        }
+        if(change.type === 'modified') {
+          appendMessage(change.doc.data(), change.doc.id);
+        }
+      });
+    }, err => {
+      if(status) { status.textContent = '🔴 Ошибка'; status.style.color = 'var(--danger)'; }
+      console.error('Firebase error:', err);
+    });
+  if(isAdmin) {
+    document.getElementById('adminPanel').style.display = 'block';
+    loadBannedList();
+  }
 }
 
-function sendSystemMessage(text) {
-    if(!myNick) return;
-    const msg = {
-        clientId: clientId,
-        author: 'Система',
-        text: text,
-        time: Date.now()
-    };
-    client.publish(chatTopic, JSON.stringify(msg), { qos: 0 });
-    appendMessage(msg, false);
+// Отправка сообщения
+async function sendMessage() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if(!text) return showToast('Введи сообщение!');
+  if(!myNick) { document.getElementById('nickModal').classList.add('show'); return; }
+  // Проверка бана
+  const banned = await isBanned(myUid);
+  if(banned) { showToast('🚫 Ты заблокирован администратором'); return; }
+  inp.value = '';
+  await db.collection('messages').add({
+    uid: myUid,
+    author: myNick,
+    text: text,
+    time: firebase.firestore.FieldValue.serverTimestamp(),
+    deleted: false
+  });
 }
 
-document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+// Удалить сообщение (только админ)
+async function deleteMsg(docId) {
+  if(!isAdmin) return;
+  await db.collection('messages').doc(docId).update({ deleted: true, text: '' });
+  showToast('Сообщение удалено');
+}
 
-if(!myNick) setTimeout(() => document.getElementById('nickModal').classList.add('show'), 600);
+// Забанить пользователя (только админ)
+async function banUser(uid, nick) {
+  if(!isAdmin) return;
+  if(!confirm(`Забанить пользователя "${nick}"?`)) return;
+  await db.collection('banned').doc(uid).set({ nick, bannedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  showToast(`🚫 ${nick} забанен`);
+  loadBannedList();
+}
 
-function saveNick() { const n = document.getElementById('nickInput').value.trim(); if(!n) return showToast('Введи имя!'); myNick = n; localStorage.setItem('sila_nick', myNick); document.getElementById('nickModal').classList.remove('show'); showToast('Добро пожаловать, ' + myNick + '!'); }
+// Разбанить
+async function unbanUser(uid, nick) {
+  if(!isAdmin) return;
+  await db.collection('banned').doc(uid).delete();
+  showToast(`✅ ${nick} разбанен`);
+  loadBannedList();
+}
+
+// Загрузить список забаненных
+async function loadBannedList() {
+  const snap = await db.collection('banned').get();
+  const el = document.getElementById('bannedList');
+  if(snap.empty) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);">Никто не забанен</div>'; return; }
+  el.innerHTML = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    el.innerHTML += `<div class="banned-list-item">
+      <span>🚫 ${d.nick}</span>
+      <button class="unban-btn" onclick="unbanUser('${doc.id}','${d.nick}')">Разбанить</button>
+    </div>`;
+  });
+}
+
+// Войти как админ (через пароль)
+function tryAdminLogin() {
+  const pw = prompt('Введи пароль администратора:');
+  if(pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    localStorage.setItem('sila_admin', 'true');
+    document.getElementById('adminPanel').style.display = 'block';
+    loadBannedList();
+    showToast('🛡 Режим администратора включён');
+  } else {
+    showToast('Неверный пароль');
+  }
+}
+
+// Системное сообщение
+async function sendSystemMessage(text) {
+  if(!myNick) return;
+  await db.collection('messages').add({
+    uid: 'system',
+    author: 'Система',
+    text: text,
+    time: firebase.firestore.FieldValue.serverTimestamp(),
+    deleted: false
+  });
+}
+
+document.getElementById('chatInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
+if(!myNick) setTimeout(() => document.getElementById('nickModal').classList.add('show'), 2500);
+
+function saveNick() {
+  const n = document.getElementById('nickInput').value.trim();
+  if(!n) return showToast('Введи имя!');
+  myNick = n;
+  localStorage.setItem('sila_nick', myNick);
+  document.getElementById('nickModal').classList.remove('show');
+  showToast('Добро пожаловать, ' + myNick + '! 💪');
+  initChat();
+}
+
 
 // НАВИГАЦИЯ — см. обновлённую версию ниже
 
 // ГЛАВНАЯ
 function initHome(){ document.getElementById('dailyQuote').textContent=`"${quotes[Math.floor(Math.random()*quotes.length)]}"`; const cl=document.getElementById('dailyChecklist'); cl.innerHTML=''; const saved=JSON.parse(localStorage.getItem('cl')||'{}'); checklistItems.forEach((item,i)=>{ const c=saved[i]||false; cl.innerHTML+=`<div class="checklist-item"><div class="check-box ${c?'checked':''}" onclick="toggleCheck(${i},this)"><i class="fas fa-check"></i></div><span class="check-text ${c?'done':''}">${item}</span></div>`; }); updateStats(); }
-function toggleCheck(i,el){const s=JSON.parse(localStorage.getItem('cl')||'{}');s[i]=!s[i];localStorage.setItem('cl',JSON.stringify(s));el.classList.toggle('checked');el.nextElementSibling.classList.toggle('done');updateStats();}
-function updateStats(){const s=JSON.parse(localStorage.getItem('cl')||'{}');const d=Object.values(s).filter(Boolean).length;document.getElementById('statDays').textContent=Math.max(1,d);document.getElementById('statWater').textContent=waterCount;document.getElementById('statBottles').textContent=totalBottles;}
+function toggleCheck(i,el){const s=JSON.parse(localStorage.getItem('cl')||'{}');s[i]=!s[i];localStorage.setItem('cl',JSON.stringify(s));el.classList.toggle('checked');el.nextElementSibling.classList.toggle('done');updateStats();markDayDone();}
+function updateStats(){document.getElementById('statDays').textContent=parseInt(localStorage.getItem('sila_days')||'0');document.getElementById('statWater').textContent=waterCount;document.getElementById('statBottles').textContent=totalBottles;}
+function markDayDone(){const today=new Date().toDateString();const last=localStorage.getItem('sila_last_day');if(last===today)return;const s=JSON.parse(localStorage.getItem('cl')||'{}');const done=Object.values(s).filter(Boolean).length;if(done>=checklistItems.length){localStorage.setItem('sila_last_day',today);const days=parseInt(localStorage.getItem('sila_days')||'0')+1;localStorage.setItem('sila_days',days);updateStats();showToast('🔥 День засчитан! Серия: '+days+' дн.');}}
 
 // КБЖУ
 function calcNutrition(){ const g=document.getElementById('nGender').value,a=+document.getElementById('nAge').value,h=+document.getElementById('nHeight').value,w=+document.getElementById('nWeight').value,goal=document.getElementById('nGoal').value; let bmr=g==='male'?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161; let tdee=bmr*1.55; if(goal==='lose')tdee*=0.85; if(goal==='gain')tdee*=1.15; const cal=Math.round(tdee),p=Math.round(w*1.8),f=Math.round(w*0.9),c=Math.round((cal-p*4-f*9)/4); document.getElementById('nutritionResult').style.display='block'; document.getElementById('macroGrid').innerHTML=`<div class="macro-item"><div class="macro-val" style="color:var(--accent)">${cal}</div><div class="macro-label">Ккал</div></div><div class="macro-item"><div class="macro-val" style="color:#ef5350">${p}г</div><div class="macro-label">Белки</div></div><div class="macro-item"><div class="macro-val" style="color:#42a5f5">${f}г</div><div class="macro-label">Жиры</div></div><div class="macro-item"><div class="macro-val" style="color:#66bb6a">${c}г</div><div class="macro-label">Углеводы</div></div>`; showToast('КБЖУ рассчитан!'); }
@@ -670,11 +832,13 @@ function switchToTab(tab) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const sec = document.getElementById('sec-'+tab);
   if(sec) sec.classList.add('active');
+  if(tab==='feed') initChat();
   if(tab==='game') resizeCanvas();
   if(tab==='progress') initProgress();
   if(tab==='profile') initProfile();
   if(tab==='mood') renderDiary();
   if(tab==='notif') initNotif();
+  if(tab==='feed') { if(myNick) initChat(); else document.getElementById('nickModal').classList.add('show'); }
   document.querySelector('.app-content').scrollTop=0;
 }
 document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -850,26 +1014,7 @@ function saveNotifSettings(){
   showToast('Настройки сохранены');
   scheduleNotifications(s);
 }
-function scheduleNotifications(s){
-  if(Notification.permission!=='granted') return;
-  if(s.morning){
-    const now=new Date(),target=new Date();
-    target.setHours(8,0,0,0);
-    if(target<=now) target.setDate(target.getDate()+1);
-    setTimeout(()=>new Notification('СИЛА.СВОБОДА.УСПЕХ 🌅',{body:'Доброе утро! Начни день с победы над собой.',icon:'/icon.png'}), target-now);
-  }
-  if(s.evening){
-    const now=new Date(),target=new Date();
-    target.setHours(21,0,0,0);
-    if(target<=now) target.setDate(target.getDate()+1);
-    setTimeout(()=>new Notification('СИЛА.СВОБОДА.УСПЕХ 🌙',{body:'Заполни вечерний чек-лист! Как прошёл день?',icon:'/icon.png'}), target-now);
-  }
-  if(s.water){
-    setInterval(()=>{
-      if(waterCount<8) new Notification('💧 Не забудь про воду!',{body:`Выпито ${waterCount} из 8 стаканов`,icon:'/icon.png'});
-    }, 2*60*60*1000);
-  }
-}
+// scheduleNotifications определена ниже
 function addNotifHistory(text){
   const hist = JSON.parse(localStorage.getItem('notif_hist')||'[]');
   hist.unshift({text, time: new Date().toLocaleString('ru')});
@@ -888,8 +1033,88 @@ function renderNotifHistory(){
     </div>`).join('');
 }
 
-initHome();renderHabits();initMeals();resizeCanvas();
-// init notif scheduling on load
+// СПЛЭШ ЭКРАН
+const splashQuotes = [
+  "Каждый день без срыва — это победа.",
+  "Твоё тело благодарит тебя за каждый выбор.",
+  "Сила воли — это мышца. Тренируй её.",
+  "Ты сильнее своих желаний.",
+  "Свобода начинается с одного решения."
+];
+document.getElementById('splashQuoteText').textContent = splashQuotes[Math.floor(Math.random()*splashQuotes.length)];
+setTimeout(()=>{ document.getElementById('splashScreen').classList.add('hide'); setTimeout(()=>document.getElementById('splashScreen').remove(), 700); }, 2200);
+
+initHome(); renderHabits(); initMeals(); resizeCanvas();
+
+// УВЕДОМЛЕНИЯ — расписание с мотивацией
+const motivMorning = [
+  "🌅 Доброе утро, воин! Сегодня ты снова выбираешь силу. Начни день без сожалений.",
+  "💪 Новый день — новая победа. Ты уже сильнее, чем вчера.",
+  "🔥 Просыпайся! Твои привычки формируют твою жизнь прямо сейчас.",
+];
+const motivEvening = [
+  "🌙 Вечерний чек-лист ждёт тебя. Подведи итог дня — ты справился?",
+  "✅ Отметь свои победы сегодня. Каждая галочка — кирпич в новую жизнь.",
+  "🌟 День заканчивается. Ты устоял перед соблазнами? Запиши это в дневник!",
+];
+const motivHabits = [
+  "⚡ Напоминание: отметь свои привычки сегодня. Не давай серии прерваться!",
+  "🏆 Твой трекер привычек ждёт отметки. Продолжай серию!",
+  "💥 Каждый день без вредной привычки — это твоя победа. Отметь её!",
+];
+const motivWater = [
+  "💧 Время выпить воду! Твоё тело — на 60% вода. Уважай его.",
+  "🥤 Стакан воды сейчас — это забота о себе. Вперёд!",
+  "💧 Не забывай про воду! Уже выпил 8 стаканов сегодня?",
+];
+
+function getRandMsg(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function scheduleNotifications(s){
+  if(Notification.permission!=='granted') return;
+  // Утренняя
+  if(s.morning){
+    const now=new Date(), target=new Date();
+    target.setHours(8,0,0,0);
+    if(target<=now) target.setDate(target.getDate()+1);
+    setTimeout(()=>{
+      new Notification('СИЛА.СВОБОДА.УСПЕХ', {body: getRandMsg(motivMorning), icon:'https://shipmanlife-cpu.github.io/ff/icon.png'});
+      addNotifHistory('🌅 Утренняя мотивация отправлена');
+    }, target-now);
+  }
+  // Вечерняя
+  if(s.evening){
+    const now=new Date(), target=new Date();
+    target.setHours(21,0,0,0);
+    if(target<=now) target.setDate(target.getDate()+1);
+    setTimeout(()=>{
+      new Notification('СИЛА.СВОБОДА.УСПЕХ', {body: getRandMsg(motivEvening), icon:'https://shipmanlife-cpu.github.io/ff/icon.png'});
+      addNotifHistory('🌙 Вечернее напоминание отправлено');
+    }, target-now);
+  }
+  // Привычки (12:00)
+  if(s.habits){
+    const now=new Date(), target=new Date();
+    target.setHours(12,0,0,0);
+    if(target<=now) target.setDate(target.getDate()+1);
+    setTimeout(()=>{
+      new Notification('СИЛА.СВОБОДА.УСПЕХ', {body: getRandMsg(motivHabits), icon:'https://shipmanlife-cpu.github.io/ff/icon.png'});
+      addNotifHistory('⚡ Напоминание о привычках отправлено');
+    }, target-now);
+  }
+  // Вода — каждые 2 часа с 9 до 21
+  if(s.water){
+    const sendWater = () => {
+      const h = new Date().getHours();
+      if(h>=9 && h<=21 && waterCount<8){
+        new Notification('💧 Не забудь про воду!', {body: getRandMsg(motivWater), icon:'https://shipmanlife-cpu.github.io/ff/icon.png'});
+        addNotifHistory('💧 Напоминание о воде отправлено');
+      }
+    };
+    setInterval(sendWater, 2*60*60*1000);
+  }
+}
+
 const _ns = JSON.parse(localStorage.getItem('notif_settings')||'{}');
 if(Object.keys(_ns).length) scheduleNotifications(_ns);
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
