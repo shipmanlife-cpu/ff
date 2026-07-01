@@ -880,7 +880,7 @@ let currentUser = null;
 let isAdmin = false;
 let chatUnsubscribe = null;
 
-const ADMIN_NICK = 'Владислав'; // твой ник для админки
+const ADMIN_PASSWORD = 'M!nd$tr@tegy#2024_S!la'; // секретный пароль только для тебя
 
 function signInWithNick() {
   const inp = document.getElementById('chatNickInput');
@@ -892,9 +892,22 @@ function signInWithNick() {
   localStorage.setItem('sila_uid', myUid);
   localStorage.setItem('sila_nick', myNick);
   currentUser = { uid: myUid, displayName: myNick, photoURL: null, email: null };
-  isAdmin = (myNick === ADMIN_NICK);
+  isAdmin = false; // обычный пользователь
   showChatUI();
   initChat();
+}
+
+function tryAdminLogin() {
+  const pw = prompt('Введи пароль администратора:');
+  if(pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    localStorage.setItem('sila_admin', 'true');
+    document.getElementById('adminPanel').style.display = 'block';
+    loadBannedList();
+    showToast('🛡 Режим администратора включён');
+  } else if(pw !== null) {
+    showToast('Неверный пароль');
+  }
 }
 
 function signOut() {
@@ -911,7 +924,9 @@ function showChatUI() {
   document.getElementById('chatMain').style.display = 'flex';
   document.getElementById('chatUserName').textContent = myNick;
   document.getElementById('chatUserAvatar').src = '';
-  if(isAdmin) {
+  // Восстанавливаем статус админа
+  if(localStorage.getItem('sila_admin') === 'true') {
+    isAdmin = true;
     document.getElementById('adminPanel').style.display = 'block';
     loadBannedList();
   }
@@ -925,6 +940,16 @@ function hideChatUI() {
   if(chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
 }
 
+function signOut() {
+  if(chatUnsubscribe) chatUnsubscribe();
+  currentUser = null;
+  myNick = '';
+  isAdmin = false;
+  localStorage.removeItem('sila_nick');
+  localStorage.removeItem('sila_admin');
+  hideChatUI();
+}
+
 // Автовход если имя уже сохранено
 const savedNick = localStorage.getItem('sila_nick');
 if(savedNick) {
@@ -932,7 +957,7 @@ if(savedNick) {
   myUid = localStorage.getItem('sila_uid') || ('u_' + Math.random().toString(36).substr(2,10));
   localStorage.setItem('sila_uid', myUid);
   currentUser = { uid: myUid, displayName: myNick, photoURL: null, email: null };
-  isAdmin = (myNick === ADMIN_NICK);
+  isAdmin = localStorage.getItem('sila_admin') === 'true';
   setTimeout(() => {
     const sec = document.getElementById('sec-feed');
     if(sec && sec.classList.contains('active')) {
@@ -1004,17 +1029,17 @@ function initChat() {
 
 // Отправка сообщения
 async function sendMessage() {
-  if(!currentUser) { showToast('Войди через Google!'); return; }
+  if(!currentUser) { showToast('Войди в чат!'); return; }
   const inp = document.getElementById('chatInput');
   const text = inp.value.trim();
   if(!text) return;
   const banned = await isBanned(currentUser.uid);
-  if(banned) { showToast('🚫 Ты заблокирован администратором'); return; }
+  if(banned) { showToast('🚫 Ты заблокирован'); return; }
   inp.value = '';
   await db.collection('messages').add({
     uid: currentUser.uid,
-    author: currentUser.displayName || currentUser.email,
-    photoURL: currentUser.photoURL || '',
+    author: currentUser.displayName,
+    photoURL: '',
     text, deleted: false,
     time: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -1297,7 +1322,16 @@ function switchToTab(tab) {
   if(tab==='profile') initProfile();
   if(tab==='mood') renderDiary();
   if(tab==='notif') initNotif();
-  if(tab==='feed') { if(myNick) initChat(); else document.getElementById('nickModal').classList.add('show'); }
+  if(tab==='feed') {
+    if(currentUser) {
+      showChatUI();
+      initChat();
+    } else {
+      document.getElementById('chatAuthScreen').style.display = 'block';
+      document.getElementById('chatUserBar').style.display = 'none';
+      document.getElementById('chatMain').style.display = 'none';
+    }
+  }
   if(tab==='savings') calcSavings();
   document.querySelector('.app-content').scrollTop=0;
 }
