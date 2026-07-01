@@ -221,14 +221,12 @@
   .habit-last-action { font-size:11px; color:var(--muted); text-align:center; margin-top:8px; }
 
   /* СПЛЭШ ЭКРАН */
-  #splashScreen { position:fixed; top:0; left:0; width:100%; height:100%; background:#050505; z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; transition:opacity 0.6s ease; }
+  #splashScreen { position:fixed; top:0; left:0; width:100%; height:100%; background:#050505; z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.5s ease; }
   #splashScreen.hide { opacity:0; pointer-events:none; }
-  .splash-logo { font-family:'Oswald',sans-serif; font-size:38px; font-weight:700; letter-spacing:6px; color:var(--accent); text-shadow:0 0 30px rgba(255,193,7,0.6); animation:splashPulse 1.5s ease infinite; }
+  .splash-logo { font-family:'Oswald',sans-serif; font-size:38px; font-weight:700; letter-spacing:6px; color:var(--accent); }
   .splash-sub { font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:4px; color:rgba(255,255,255,0.4); margin-top:8px; text-transform:uppercase; }
-  .splash-line { width:60px; height:2px; background:var(--accent); border-radius:2px; margin-top:24px; animation:splashLine 1.5s ease infinite; box-shadow:0 0 10px rgba(255,193,7,0.5); }
+  .splash-line { width:60px; height:2px; background:var(--accent); border-radius:2px; margin-top:24px; }
   .splash-quote { font-size:13px; color:rgba(255,255,255,0.3); margin-top:40px; font-style:italic; text-align:center; padding:0 40px; line-height:1.6; }
-  @keyframes splashPulse { 0%,100%{text-shadow:0 0 20px rgba(255,193,7,0.4)} 50%{text-shadow:0 0 40px rgba(255,193,7,0.9)} }
-  @keyframes splashLine { 0%,100%{width:40px;opacity:0.5} 50%{width:100px;opacity:1} }
   /* ADMIN / BAN */
   .msg-admin-btns { display:none; gap:6px; margin-top:4px; }
   .msg-bubble:hover .msg-admin-btns { display:flex; }
@@ -1637,17 +1635,22 @@ const splashQuotes = [
   "Ты сильнее своих желаний.",
   "Свобода начинается с одного решения."
 ];
-document.getElementById('splashQuoteText').textContent = splashQuotes[Math.floor(Math.random()*splashQuotes.length)];
-
-function hideSplash() {
-  const splash = document.getElementById('splashScreen');
-  if(!splash) return;
-  splash.classList.add('hide');
-  setTimeout(() => { if(splash.parentNode) splash.parentNode.removeChild(splash); }, 700);
-}
-setTimeout(hideSplash, 2000);
-// Запасной вариант — если что-то пошло не так
-window.addEventListener('load', () => setTimeout(hideSplash, 3000));
+// СПЛЭШ — убирается через CSS анимацию автоматически
+(function() {
+  function hideSplash() {
+    var s = document.getElementById('splashScreen');
+    if (!s || s.classList.contains('hide')) return;
+    s.classList.add('hide');
+    setTimeout(function() { if(s && s.parentNode) s.parentNode.removeChild(s); }, 600);
+  }
+  // Убираем через 1.5 секунды
+  setTimeout(hideSplash, 1500);
+  // Запасной — через 3 секунды
+  setTimeout(hideSplash, 3000);
+  // При загрузке страницы
+  document.addEventListener('DOMContentLoaded', function() { setTimeout(hideSplash, 1000); });
+  window.addEventListener('load', function() { setTimeout(hideSplash, 500); });
+})();
 
 initHome(); renderHabits(); initMeals(); resizeCanvas();
 
