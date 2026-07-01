@@ -350,10 +350,10 @@
     <!-- Профиль пользователя в чате -->
     <div id="chatUserBar" style="display:none; margin-bottom:8px;">
       <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg2); border:1px solid var(--border); border-radius:12px;">
-        <img id="chatUserAvatar" src="" style="width:32px; height:32px; border-radius:50%; border:2px solid var(--accent);">
+        <div id="chatUserInitial" style="width:36px; height:36px; border-radius:50%; background:var(--accent); color:#000; font-family:'Oswald',sans-serif; font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;"></div>
         <div style="flex:1;">
           <div id="chatUserName" style="font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1px; color:white;"></div>
-          <div style="font-size:10px; color:var(--muted);">в сети</div>
+          <div style="font-size:10px; color:var(--success);">● в сети</div>
         </div>
         <button onclick="signOut()" style="background:none; border:1px solid var(--border); color:var(--muted); border-radius:8px; padding:6px 10px; font-size:11px; cursor:pointer;">Выйти</button>
       </div>
@@ -898,15 +898,34 @@ function signInWithNick() {
 }
 
 function tryAdminLogin() {
-  const pw = prompt('Введи пароль администратора:');
+  // Показываем красивый модальный попап вместо системного prompt
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:360px;">
+      <div style="font-family:'Oswald',sans-serif;font-size:18px;letter-spacing:2px;color:var(--accent);margin-bottom:16px;text-align:center;">🛡 ADMIN</div>
+      <input type="password" id="adminPwInput" placeholder="Введи пароль..." style="width:100%;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:white;font-size:16px;outline:none;margin-bottom:14px;">
+      <div style="display:flex;gap:10px;">
+        <button onclick="this.closest('div[style]').remove()" style="flex:1;padding:12px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-family:'Oswald',sans-serif;">Отмена</button>
+        <button onclick="checkAdminPw(this)" style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:10px;color:#000;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:700;">Войти</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => modal.querySelector('#adminPwInput').focus(), 100);
+}
+
+function checkAdminPw(btn) {
+  const pw = document.getElementById('adminPwInput').value;
   if(pw === ADMIN_PASSWORD) {
+    btn.closest('div[style*="position:fixed"]').remove();
     isAdmin = true;
     localStorage.setItem('sila_admin', 'true');
     document.getElementById('adminPanel').style.display = 'block';
     loadBannedList();
     showToast('🛡 Режим администратора включён');
-  } else if(pw !== null) {
+  } else {
     showToast('Неверный пароль');
+    document.getElementById('adminPwInput').value = '';
   }
 }
 
@@ -923,8 +942,11 @@ function showChatUI() {
   document.getElementById('chatUserBar').style.display = 'block';
   document.getElementById('chatMain').style.display = 'flex';
   document.getElementById('chatUserName').textContent = myNick;
-  document.getElementById('chatUserAvatar').src = '';
-  // Восстанавливаем статус админа
+  // Показываем инициал вместо фото
+  const avatar = document.getElementById('chatUserAvatar');
+  avatar.style.display = 'none';
+  const initEl = document.getElementById('chatUserInitial');
+  if(initEl) initEl.textContent = myNick.charAt(0).toUpperCase();
   if(localStorage.getItem('sila_admin') === 'true') {
     isAdmin = true;
     document.getElementById('adminPanel').style.display = 'block';
